@@ -7,7 +7,12 @@ cjparse_json_checkers::cjparse_check_if_object (std::string &str)
         {
             // ERROR 0;
         }
-    if (str[0] == '{' && str[str.length () - 1] == '}')
+    std::size_t first_curly_pos = str.find_first_of ('{', 0);
+    std::size_t first_square_pos = str.find_first_of ('[', 0);
+    std::size_t first_quote_pos = str.find_first_of ('\"', 0);
+
+    if ((first_curly_pos < first_square_pos)
+        && (first_curly_pos < first_quote_pos))
         {
             return true;
         }
@@ -24,7 +29,12 @@ cjparse_json_checkers::cjparse_check_if_array (std::string &str)
         {
             // ERROR 0;
         }
-    if (str[0] == '[' && str[str.length () - 1] == ']')
+    std::size_t first_curly_pos = str.find_first_of ('{', 0);
+    std::size_t first_square_pos = str.find_first_of ('[', 0);
+    std::size_t first_quote_pos = str.find_first_of ('\"', 0);
+
+    if ((first_square_pos < first_curly_pos)
+        && (first_square_pos < first_quote_pos))
         {
             return true;
         }
@@ -37,7 +47,16 @@ cjparse_json_checkers::cjparse_check_if_array (std::string &str)
 bool
 cjparse_json_checkers::cjparse_check_if_value_string (std::string &str)
 {
-    if (str[0] == '\"' && str[str.length () - 1] == '\"')
+    if (str.length () == 0)
+        {
+            // ERROR 0
+        }
+    std::size_t first_curly_pos = str.find_first_of ('{', 0);
+    std::size_t first_square_pos = str.find_first_of ('[', 0);
+    std::size_t first_quote_pos = str.find_first_of ('\"', 0);
+
+    if ((first_quote_pos < first_curly_pos)
+        && (first_quote_pos < first_square_pos))
         {
             return true;
         }
@@ -50,8 +69,16 @@ cjparse_json_checkers::cjparse_check_if_value_string (std::string &str)
 bool
 cjparse_json_checkers::cjparse_check_if_value_number (std::string &str)
 {
+    std::string str_cpy = str;
+
+    char whitespace[6] = { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b };
+    for (char chr : whitespace)
+        {
+            str_cpy.erase (remove (str_cpy.begin (), str_cpy.end (), chr),
+                           str_cpy.end ());
+        }
     bool is_number = true;
-    for (char i : str)
+    for (char i : str_cpy)
         {
             if (!std::isdigit (i))
                 {
@@ -68,7 +95,15 @@ cjparse_json_checkers::cjparse_check_if_value_number (std::string &str)
 bool
 cjparse_json_checkers::cjparse_check_if_value_bool (std::string &str)
 {
-    if (str == "true" || str == "false")
+    std::string str_cpy = str;
+
+    char whitespace[6] = { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b };
+    for (char chr : whitespace)
+        {
+            str_cpy.erase (remove (str_cpy.begin (), str_cpy.end (), chr),
+                           str_cpy.end ());
+        }
+    if (str_cpy == "true" || str_cpy == "false")
         {
             return true;
         }
@@ -81,7 +116,15 @@ cjparse_json_checkers::cjparse_check_if_value_bool (std::string &str)
 bool
 cjparse_json_checkers::cjparse_check_if_value_null (std::string &str)
 {
-    if (str == "null")
+    std::string str_cpy = str;
+
+    char whitespace[6] = { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b };
+    for (char chr : whitespace)
+        {
+            str_cpy.erase (remove (str_cpy.begin (), str_cpy.end (), chr),
+                           str_cpy.end ());
+        }
+    if (str_cpy == "null")
         {
             return true;
         }
@@ -94,12 +137,22 @@ cjparse_json_checkers::cjparse_check_if_value_null (std::string &str)
 std::string
 cjparse_json_parser::cjparse_parse_value_string (std::string &str)
 {
+    std::size_t st_of_string = str.find ('\"', 0);
+    std::size_t en_of_string = str.rfind ('\"', str.length () - 1);
+
+    cjparse::remove_json_whitespace_outside_delimeters (str, st_of_string,
+                                                        en_of_string);
     return str.substr (1, str.length () - 3);
 }
 
 std::variant<int, long int, long long int, double, long double>
 cjparse_json_parser::cjparse_parse_value_number (std::string &str)
 {
+    char whitespace[6] = { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b };
+    for (char chr : whitespace)
+        {
+            str.erase (remove (str.begin (), str.end (), chr), str.end ());
+        }
     if (std::binary_search (str.begin (), str.end (), '.')
         || std::binary_search (str.begin (), str.end (), 'e')
         || std::binary_search (str.begin (), str.end (), 'E'))
@@ -115,6 +168,11 @@ cjparse_json_parser::cjparse_parse_value_number (std::string &str)
 bool
 cjparse_json_parser::cjparse_parse_value_bool (std::string &str)
 {
+    char whitespace[6] = { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b };
+    for (char chr : whitespace)
+        {
+            str.erase (remove (str.begin (), str.end (), chr), str.end ());
+        }
     if (str == "true")
         {
             return true;
