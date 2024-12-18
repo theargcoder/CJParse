@@ -1446,11 +1446,7 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
 
 cjparse::cjparse (std::string &str)
 {
-    std::cout << "ORIGINAL : " << "\n\n\n" << str << "\n\n\n";
-    remove_json_whitespace_between_delimeters (str, 50, 151);
-    std::cout << "BETWEEN 50 and 151: " << "\n\n\n" << str << "\n\n\n";
-    remove_json_whitespace_outside_delimeters (str, 150, 151);
-    std::cout << "OUTSIDE 150 and 151: " << "\n\n\n" << str << "\n\n\n";
+    cjparse_json_parser::cjparse_parse_object (str, JSON);
 }
 
 void

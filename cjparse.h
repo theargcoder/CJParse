@@ -66,16 +66,15 @@ class cjparse
     friend class cjparse_json_checkers;
     friend class cjparse_json_parser;
 
+  public:
+    cjparse_json_value JSON;
+
   private: // functions
     void parse_json_string (std::string &str);
     static void remove_json_whitespace_between_delimeters (
         std::string &str, std::size_t lower_bound, std::size_t upper_bound);
     static void remove_json_whitespace_outside_delimeters (
         std::string &str, std::size_t lower_bound, std::size_t upper_bound);
-
-  private: // variables
-    bool proceed = true;
-    cjparse_json_value JSON;
 
   private:
 };
@@ -97,21 +96,21 @@ class cjparse_json_parser
 {
   public:
     // assign value by returning it
-    std::string cjparse_parse_value_string (std::string &str);
+    static std::string cjparse_parse_value_string (std::string &str);
 
-    std::variant<int, long int, long long int, double, long double>
+    static std::variant<int, long int, long long int, double, long double>
     cjparse_parse_value_number (std::string &str);
 
-    bool cjparse_parse_value_bool (std::string &str);
+    static bool cjparse_parse_value_bool (std::string &str);
 
-    std::any cjparse_parse_value_null (std::string &str);
+    static std::any cjparse_parse_value_null (std::string &str);
 
     // modify by reference the container due to nesting
-    void cjparse_parse_array (std::string &str,
-                              cjparse::cjparse_json_value &value);
+    static void cjparse_parse_array (std::string &str,
+                                     cjparse::cjparse_json_value &value);
 
-    void cjparse_parse_object (std::string &str,
-                               cjparse::cjparse_json_value &value);
+    static void cjparse_parse_object (std::string &str,
+                                      cjparse::cjparse_json_value &value);
 
   private:
 };
