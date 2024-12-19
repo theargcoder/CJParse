@@ -817,19 +817,7 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
 
     if (end != std::string::npos)
         {
-            bool keepgoing_00 = true;
-            while (keepgoing_00 && (end != std::string::npos))
-                {
-                    if (str[end - 1] == '\\')
-                        {
-                            end = str.find (',', end + 1);
-                            keepgoing_00 = true;
-                        }
-                    else
-                        {
-                            keepgoing_00 = false;
-                        }
-                }
+            check_if_prev_is_backlash (str, end, ',');
         }
 
     if (end != std::string::npos)
@@ -840,52 +828,12 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                     std::size_t st_of_first_object = 0;
                     std::size_t en_of_first_object
                         = str.find (',', st_of_first_object + 1);
-
-                    bool keepgoing_0 = true;
-                    while (keepgoing_0)
-                        {
-                            if (str[en_of_first_object - 1] == '\\')
-                                {
-                                    en_of_first_object = str.find (
-                                        ',', en_of_first_object + 1);
-                                    keepgoing_0 = true;
-                                }
-                            else
-                                {
-                                    keepgoing_0 = false;
-                                }
-                        }
-
-                    std::size_t st_quote_of_name
-                        = str.find ('\"', st_of_first_object);
-                    cjparse::remove_json_whitespace_between_delimeters (
-                        str, 0, st_quote_of_name);
-                    std::size_t en_quote_of_name
-                        = str.find ('\"', st_quote_of_name + 1);
-                    bool keepgoing_1 = true;
-                    while (keepgoing_1)
-                        {
-                            if (str[en_quote_of_name - 1] == '\\')
-                                {
-                                    st_quote_of_name = str.find (
-                                        '\"', en_quote_of_name + 1);
-                                    keepgoing_1 = true;
-                                }
-                            else
-                                {
-                                    keepgoing_1 = false;
-                                }
-                        }
-                    std::size_t first_double_point_after_name
-                        = str.find (':', en_quote_of_name);
-
-                    cjparse::remove_json_whitespace_between_delimeters (
-                        str, en_quote_of_name, first_double_point_after_name);
+                    check_if_prev_is_backlash (str, en_of_first_object, ',');
 
                     std::string obj_name;
 
-                    parse_internal_object (str, st_quote_of_name,
-                                           en_quote_of_name, obj_name,
+                    parse_internal_object (str, st_of_first_object,
+                                           en_of_first_object, obj_name,
                                            temp_value);
                     object[obj_name] = temp_value;
                     done_the_first_one = true;
@@ -895,40 +843,14 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                     std::size_t st_of_first_object = 0;
                     std::size_t en_of_first_object
                         = str.find (',', st_of_first_object + 1);
+                    check_if_prev_is_backlash (str, en_of_first_object, ',');
 
-                    bool keepgoing_0 = true;
-                    while (keepgoing_0)
-                        {
-                            if (str[en_of_first_object - 1] == '\\')
-                                {
-                                    en_of_first_object = str.find (
-                                        ',', en_of_first_object + 1);
-                                    keepgoing_0 = true;
-                                }
-                            else
-                                {
-                                    keepgoing_0 = false;
-                                }
-                        }
                     std::size_t curr_st_of_nth_object = en_of_first_object;
                     std::size_t curr_end_of_nth_object
                         = str.find (',', en_of_first_object + 1);
+                    check_if_prev_is_backlash (str, curr_end_of_nth_object,
+                                               ',');
 
-                    bool keepgoing_1 = true;
-                    while (keepgoing_1)
-                        {
-                            if (str[en_of_first_object - 1] == '\\'
-                                && curr_end_of_nth_object != std::string::npos)
-                                {
-                                    en_of_first_object = str.find (
-                                        ',', en_of_first_object + 1);
-                                    keepgoing_1 = true;
-                                }
-                            else
-                                {
-                                    keepgoing_1 = false;
-                                }
-                        }
                     bool still_obj_to_parse
                         = curr_end_of_nth_object != std::string::npos;
                     if (still_obj_to_parse)
@@ -942,45 +864,11 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                             bool keeplooping = true;
                             while (keeplooping)
                                 {
-                                    std::size_t st_quote_of_name
-                                        = str.find ('\"', st_of_first_object);
-                                    cjparse::
-                                        remove_json_whitespace_between_delimeters (
-                                            str, 0, st_quote_of_name);
-                                    std::size_t en_quote_of_name = str.find (
-                                        '\"', st_quote_of_name + 1);
-                                    bool keepgoing_1 = true;
-                                    while (keepgoing_1)
-                                        {
-                                            if (str[en_quote_of_name - 1]
-                                                    == '\\'
-                                                && en_quote_of_name
-                                                       != std::string::npos)
-                                                {
-                                                    st_quote_of_name
-                                                        = str.find (
-                                                            '\"',
-                                                            en_quote_of_name
-                                                                + 1);
-                                                    keepgoing_1 = true;
-                                                }
-                                            else
-                                                {
-                                                    keepgoing_1 = false;
-                                                }
-                                        }
-                                    std::size_t first_double_point_after_name
-                                        = str.find (':', en_quote_of_name);
-
-                                    cjparse::
-                                        remove_json_whitespace_between_delimeters (
-                                            str, en_quote_of_name,
-                                            first_double_point_after_name);
                                     std::string obj_name;
 
                                     parse_internal_object (
-                                        str, st_quote_of_name,
-                                        en_quote_of_name, obj_name,
+                                        str, curr_st_of_nth_object,
+                                        curr_end_of_nth_object, obj_name,
                                         temp_value);
 
                                     object[obj_name] = temp_value;
@@ -989,60 +877,16 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                                     std::size_t curr_end_of_nth_object
                                         = str.find (',', curr_end_of_nth_object
                                                              + 1);
+                                    check_if_prev_is_backlash (
+                                        str, curr_end_of_nth_object, ',');
 
-                                    bool keepgoing_2 = true;
-                                    while (keepgoing_2)
-                                        {
-                                            if (str[en_of_first_object - 1]
-                                                == '\\')
-                                                {
-                                                    en_of_first_object
-                                                        = str.find (
-                                                            ',',
-                                                            en_of_first_object
-                                                                + 1);
-                                                    keepgoing_2 = true;
-                                                }
-                                            else
-                                                {
-                                                    keepgoing_2 = false;
-                                                }
-                                        }
                                     keeplooping = curr_end_of_nth_object
                                                   != std::string::npos;
                                 }
                             std::size_t st_of_object = en_of_first_object;
                             std::size_t en_of_object
                                 = str.find ('}', st_of_object + 1);
-
-                            std::size_t st_quote_of_name
-                                = str.find ('\"', st_of_object);
-                            cjparse::
-                                remove_json_whitespace_between_delimeters (
-                                    str, 0, st_quote_of_name);
-                            std::size_t en_quote_of_name
-                                = str.find ('\"', st_quote_of_name + 1);
-                            bool keepgoing = true;
-                            while (keepgoing)
-                                {
-                                    if (str[en_quote_of_name - 1] == '\\')
-                                        {
-                                            st_quote_of_name = str.find (
-                                                '\"', en_quote_of_name + 1);
-                                            keepgoing = true;
-                                        }
-                                    else
-                                        {
-                                            keepgoing = false;
-                                        }
-                                }
-                            std::size_t first_double_point_after_name
-                                = str.find (':', en_quote_of_name);
-
-                            cjparse::
-                                remove_json_whitespace_between_delimeters (
-                                    str, en_quote_of_name,
-                                    first_double_point_after_name);
+                            check_if_prev_is_backlash (str, en_of_object, '}');
 
                             std::string obj_name;
 
@@ -1057,6 +901,7 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                             std::size_t st_of_object = en_of_first_object;
                             std::size_t en_of_object
                                 = str.find ('}', st_of_object + 1);
+                            check_if_prev_is_backlash (str, en_of_object, '}');
                             std::string obj_name;
 
                             parse_internal_object (str, st_of_object,
@@ -1092,7 +937,7 @@ void
 cjparse::parse_json_string (std::string &str)
 {
     bool yeai = cjparse_json_checkers::cjparse_check_if_object (str);
-    // JSON.cjparse_json_object.
+    // json.cjparse_json_object.
 }
 
 void
@@ -1156,37 +1001,25 @@ cjparse_json_parser::parse_internal_object (std::string &str,
     std::size_t st_quote_of_name = str.find ('\"', st_of_object);
     cjparse::remove_json_whitespace_between_delimeters (str, 0,
                                                         st_quote_of_name);
+    check_if_prev_is_backlash (str, st_quote_of_name, '\"');
+
     std::size_t en_quote_of_name = str.find ('\"', st_quote_of_name + 1);
-    bool keepgoing_1 = true;
-    while (keepgoing_1)
-        {
-            if (str[en_quote_of_name - 1] == '\\')
-                {
-                    st_quote_of_name = str.find ('\"', en_quote_of_name + 1);
-                    keepgoing_1 = true;
-                }
-            else
-                {
-                    keepgoing_1 = false;
-                }
-        }
+    check_if_prev_is_backlash (str, en_quote_of_name, '\"');
     std::size_t first_double_point_after_name
         = str.find (':', en_quote_of_name);
+    check_if_prev_is_backlash (str, first_double_point_after_name, ':');
 
     cjparse::remove_json_whitespace_between_delimeters (
         str, en_quote_of_name, first_double_point_after_name);
 
-    std::size_t st_first_object_name = str.find ("{\"", st_of_object + 1);
-    std::size_t en_first_object_name
-        = str.find ("\":", st_first_object_name + 1);
-
-    obj_name = str.substr (st_first_object_name + 3,
-                           en_first_object_name - st_first_object_name - 3);
+    obj_name = str.substr (st_quote_of_name + 1,
+                           en_quote_of_name - st_quote_of_name);
 
     std::cout << obj_name << '\n';
 
-    std::string str_value = str.substr (
-        en_first_object_name + 2, en_of_object - en_first_object_name - 1);
+    std::string str_value
+        = str.substr (en_quote_of_name, en_of_object - en_quote_of_name - 1);
+    std::cout << str_value << '\n';
 
     bool str_value_is_object
         = cjparse_json_checkers::cjparse_check_if_object (str_value);
@@ -1229,5 +1062,35 @@ cjparse_json_parser::parse_internal_object (std::string &str,
         {
             value = cjparse::cjparse_json_value (
                 cjparse_parse_value_null (str_value));
+        }
+}
+
+void
+cjparse_json_parser::check_if_prev_is_backlash (std::string &str,
+                                                std::size_t &position,
+                                                char pattern)
+{
+    while (position > 0 && str[position - 1] == '\\')
+        {
+            position = str.find (pattern, position + 1);
+            if (position == std::string::npos)
+                {
+                    break; // Avoid infinite loop if no double-quote is found.
+                }
+        }
+}
+
+void
+cjparse_json_parser::check_if_next_is_comma (std::string &str,
+                                             std::size_t &position,
+                                             char pattern)
+{
+    while (position < str.length () && str[position + 1] == ',')
+        {
+            position = str.find (pattern, position + 1);
+            if (position == std::string::npos)
+                {
+                    break; // Avoid infinite loop if no double-quote is found.
+                }
         }
 }
