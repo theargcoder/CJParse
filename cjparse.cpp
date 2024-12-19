@@ -7,9 +7,9 @@ cjparse_json_checkers::cjparse_check_if_object (std::string &str)
         {
             // ERROR 0;
         }
-    std::size_t first_curly_pos = str.find_first_of ('{', 0);
-    std::size_t first_square_pos = str.find_first_of ('[', 0);
-    std::size_t first_quote_pos = str.find_first_of ('\"', 0);
+    std::size_t first_curly_pos = str.find ('{', 0);
+    std::size_t first_square_pos = str.find ('[', 0);
+    std::size_t first_quote_pos = str.find ('\"', 0);
 
     if ((first_curly_pos < first_square_pos)
         && (first_curly_pos < first_quote_pos))
@@ -29,9 +29,9 @@ cjparse_json_checkers::cjparse_check_if_array (std::string &str)
         {
             // ERROR 0;
         }
-    std::size_t first_curly_pos = str.find_first_of ('{', 0);
-    std::size_t first_square_pos = str.find_first_of ('[', 0);
-    std::size_t first_quote_pos = str.find_first_of ('\"', 0);
+    std::size_t first_curly_pos = str.find ('{', 0);
+    std::size_t first_square_pos = str.find ('[', 0);
+    std::size_t first_quote_pos = str.find ('\"', 0);
 
     if ((first_square_pos < first_curly_pos)
         && (first_square_pos < first_quote_pos))
@@ -51,9 +51,9 @@ cjparse_json_checkers::cjparse_check_if_value_string (std::string &str)
         {
             // ERROR 0
         }
-    std::size_t first_curly_pos = str.find_first_of ('{', 0);
-    std::size_t first_square_pos = str.find_first_of ('[', 0);
-    std::size_t first_quote_pos = str.find_first_of ('\"', 0);
+    std::size_t first_curly_pos = str.find ('{', 0);
+    std::size_t first_square_pos = str.find ('[', 0);
+    std::size_t first_quote_pos = str.find ('\"', 0);
 
     if ((first_quote_pos < first_curly_pos)
         && (first_quote_pos < first_square_pos))
@@ -229,7 +229,7 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                         {
                             if (str[en_of_first_object - 1] == '\\')
                                 {
-                                    en_of_first_object = str.find_first_of (
+                                    en_of_first_object = str.find (
                                         ',', en_of_first_object + 1);
                                     keepgoing_0 = true;
                                 }
@@ -240,17 +240,17 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                         }
 
                     std::size_t st_quote_of_name
-                        = str.find_first_of ('\"', st_of_first_object);
+                        = str.find ('\"', st_of_first_object);
                     cjparse::remove_json_whitespace_between_delimeters (
                         str, 0, st_quote_of_name);
                     std::size_t en_quote_of_name
-                        = str.find_first_of ('\"', st_quote_of_name + 1);
+                        = str.find ('\"', st_quote_of_name + 1);
                     bool keepgoing_1 = true;
                     while (keepgoing_1)
                         {
                             if (str[en_quote_of_name - 1] == '\\')
                                 {
-                                    st_quote_of_name = str.find_first_of (
+                                    st_quote_of_name = str.find (
                                         '\"', en_quote_of_name + 1);
                                     keepgoing_1 = true;
                                 }
@@ -338,7 +338,7 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                         {
                             if (str[en_of_first_object - 1] == '\\')
                                 {
-                                    en_of_first_object = str.find_first_of (
+                                    en_of_first_object = str.find (
                                         ',', en_of_first_object + 1);
                                     keepgoing_0 = true;
                                 }
@@ -357,7 +357,7 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                             if (str[en_of_first_object - 1] == '\\'
                                 && curr_end_of_nth_object != std::string::npos)
                                 {
-                                    en_of_first_object = str.find_first_of (
+                                    en_of_first_object = str.find (
                                         ',', en_of_first_object + 1);
                                     keepgoing_1 = true;
                                 }
@@ -380,14 +380,12 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                             while (keeplooping)
                                 {
                                     std::size_t st_quote_of_name
-                                        = str.find_first_of (
-                                            '\"', st_of_first_object);
+                                        = str.find ('\"', st_of_first_object);
                                     cjparse::
                                         remove_json_whitespace_between_delimeters (
                                             str, 0, st_quote_of_name);
-                                    std::size_t en_quote_of_name
-                                        = str.find_first_of (
-                                            '\"', st_quote_of_name + 1);
+                                    std::size_t en_quote_of_name = str.find (
+                                        '\"', st_quote_of_name + 1);
                                     bool keepgoing_1 = true;
                                     while (keepgoing_1)
                                         {
@@ -397,7 +395,7 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                                                        != std::string::npos)
                                                 {
                                                     st_quote_of_name
-                                                        = str.find_first_of (
+                                                        = str.find (
                                                             '\"',
                                                             en_quote_of_name
                                                                 + 1);
@@ -510,7 +508,7 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                                                 == '\\')
                                                 {
                                                     en_of_first_object
-                                                        = str.find_first_of (
+                                                        = str.find (
                                                             ',',
                                                             en_of_first_object
                                                                 + 1);
@@ -529,21 +527,19 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                                 = str.find ('}', st_of_object + 1);
 
                             std::size_t st_quote_of_name
-                                = str.find_first_of ('\"', st_of_object);
+                                = str.find ('\"', st_of_object);
                             cjparse::
                                 remove_json_whitespace_between_delimeters (
                                     str, 0, st_quote_of_name);
-                            std::size_t en_quote_of_name = str.find_first_of (
-                                '\"', st_quote_of_name + 1);
+                            std::size_t en_quote_of_name
+                                = str.find ('\"', st_quote_of_name + 1);
                             bool keepgoing = true;
                             while (keepgoing)
                                 {
                                     if (str[en_quote_of_name - 1] == '\\')
                                         {
-                                            st_quote_of_name
-                                                = str.find_first_of (
-                                                    '\"',
-                                                    en_quote_of_name + 1);
+                                            st_quote_of_name = str.find (
+                                                '\"', en_quote_of_name + 1);
                                             keepgoing = true;
                                         }
                                     else
@@ -628,21 +624,19 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                                 = str.find ('}', st_of_object + 1);
 
                             std::size_t st_quote_of_name
-                                = str.find_first_of ('\"', st_of_object);
+                                = str.find ('\"', st_of_object);
                             cjparse::
                                 remove_json_whitespace_between_delimeters (
                                     str, 0, st_quote_of_name);
-                            std::size_t en_quote_of_name = str.find_first_of (
-                                '\"', st_quote_of_name + 1);
+                            std::size_t en_quote_of_name
+                                = str.find ('\"', st_quote_of_name + 1);
                             bool keepgoing = true;
                             while (keepgoing)
                                 {
                                     if (str[en_quote_of_name - 1] == '\\')
                                         {
-                                            st_quote_of_name
-                                                = str.find_first_of (
-                                                    '\"',
-                                                    en_quote_of_name + 1);
+                                            st_quote_of_name = str.find (
+                                                '\"', en_quote_of_name + 1);
                                             keepgoing = true;
                                         }
                                     else
@@ -728,14 +722,13 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
             std::size_t st_of_object = 0;
             std::size_t en_of_object = str.find (']', st_of_object + 1);
 
-            std::size_t initial_comma = str.find_first_of (',', st_of_object);
+            std::size_t initial_comma = str.find (',', st_of_object);
             bool keepgoing0 = true;
             while (keepgoing0)
                 {
                     if (str[initial_comma - 1] == '\\')
                         {
-                            initial_comma
-                                = str.find_first_of ('\"', initial_comma + 1);
+                            initial_comma = str.find ('\"', initial_comma + 1);
                             keepgoing0 = true;
                         }
                     else
@@ -744,15 +737,13 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                         }
                 }
 
-            std::size_t final_comma
-                = str.find_first_of (',', initial_comma + 1);
+            std::size_t final_comma = str.find (',', initial_comma + 1);
             bool keepgoing1 = true;
             while (keepgoing1)
                 {
                     if (str[final_comma - 1] == '\\')
                         {
-                            final_comma
-                                = str.find_first_of ('\"', final_comma + 1);
+                            final_comma = str.find ('\"', final_comma + 1);
                             keepgoing1 = true;
                         }
                     else
@@ -855,7 +846,7 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                         {
                             if (str[en_of_first_object - 1] == '\\')
                                 {
-                                    en_of_first_object = str.find_first_of (
+                                    en_of_first_object = str.find (
                                         ',', en_of_first_object + 1);
                                     keepgoing_0 = true;
                                 }
@@ -866,17 +857,17 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                         }
 
                     std::size_t st_quote_of_name
-                        = str.find_first_of ('\"', st_of_first_object);
+                        = str.find ('\"', st_of_first_object);
                     cjparse::remove_json_whitespace_between_delimeters (
                         str, 0, st_quote_of_name);
                     std::size_t en_quote_of_name
-                        = str.find_first_of ('\"', st_quote_of_name + 1);
+                        = str.find ('\"', st_quote_of_name + 1);
                     bool keepgoing_1 = true;
                     while (keepgoing_1)
                         {
                             if (str[en_quote_of_name - 1] == '\\')
                                 {
-                                    st_quote_of_name = str.find_first_of (
+                                    st_quote_of_name = str.find (
                                         '\"', en_quote_of_name + 1);
                                     keepgoing_1 = true;
                                 }
@@ -891,65 +882,11 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                     cjparse::remove_json_whitespace_between_delimeters (
                         str, en_quote_of_name, first_double_point_after_name);
 
-                    std::size_t st_first_object_name
-                        = str.find ("{\"", st_of_first_object + 1);
-                    std::size_t en_first_object_name
-                        = str.find ("\":", st_first_object_name + 1);
+                    std::string obj_name;
 
-                    std::string obj_name = str.substr (
-                        st_first_object_name + 1,
-                        en_first_object_name - st_first_object_name - 1);
-
-                    std::string str_value = str.substr (
-                        en_first_object_name + 2,
-                        en_of_first_object - en_first_object_name - 2);
-
-                    bool str_value_is_object
-                        = cjparse_json_checkers::cjparse_check_if_object (
-                            str_value);
-                    bool str_value_is_array
-                        = cjparse_json_checkers::cjparse_check_if_array (
-                            str_value);
-
-                    bool str_value_is_string = cjparse_json_checkers::
-                        cjparse_check_if_value_string (str_value);
-                    bool str_value_is_number = cjparse_json_checkers::
-                        cjparse_check_if_value_number (str_value);
-                    bool str_value_is_bool
-                        = cjparse_json_checkers::cjparse_check_if_value_bool (
-                            str_value);
-                    bool str_value_is_null
-                        = cjparse_json_checkers::cjparse_check_if_value_null (
-                            str_value);
-
-                    if (str_value_is_object)
-                        {
-                            cjparse_parse_object (str_value, temp_value);
-                        }
-                    if (str_value_is_array)
-                        {
-                            cjparse_parse_array (str_value, temp_value);
-                        }
-                    if (str_value_is_array)
-                        {
-                            temp_value = cjparse::cjparse_json_value (
-                                cjparse_parse_value_string (str_value));
-                        }
-                    if (str_value_is_array)
-                        {
-                            temp_value = cjparse::cjparse_json_value (
-                                cjparse_parse_value_number (str_value));
-                        }
-                    if (str_value_is_array)
-                        {
-                            temp_value = cjparse::cjparse_json_value (
-                                cjparse_parse_value_bool (str_value));
-                        }
-                    if (str_value_is_array)
-                        {
-                            temp_value = cjparse::cjparse_json_value (
-                                cjparse_parse_value_null (str_value));
-                        }
+                    parse_internal_object (str, st_quote_of_name,
+                                           en_quote_of_name, obj_name,
+                                           temp_value);
                     object[obj_name] = temp_value;
                     done_the_first_one = true;
                 }
@@ -964,7 +901,7 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                         {
                             if (str[en_of_first_object - 1] == '\\')
                                 {
-                                    en_of_first_object = str.find_first_of (
+                                    en_of_first_object = str.find (
                                         ',', en_of_first_object + 1);
                                     keepgoing_0 = true;
                                 }
@@ -983,7 +920,7 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                             if (str[en_of_first_object - 1] == '\\'
                                 && curr_end_of_nth_object != std::string::npos)
                                 {
-                                    en_of_first_object = str.find_first_of (
+                                    en_of_first_object = str.find (
                                         ',', en_of_first_object + 1);
                                     keepgoing_1 = true;
                                 }
@@ -1006,14 +943,12 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                             while (keeplooping)
                                 {
                                     std::size_t st_quote_of_name
-                                        = str.find_first_of (
-                                            '\"', st_of_first_object);
+                                        = str.find ('\"', st_of_first_object);
                                     cjparse::
                                         remove_json_whitespace_between_delimeters (
                                             str, 0, st_quote_of_name);
-                                    std::size_t en_quote_of_name
-                                        = str.find_first_of (
-                                            '\"', st_quote_of_name + 1);
+                                    std::size_t en_quote_of_name = str.find (
+                                        '\"', st_quote_of_name + 1);
                                     bool keepgoing_1 = true;
                                     while (keepgoing_1)
                                         {
@@ -1023,7 +958,7 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                                                        != std::string::npos)
                                                 {
                                                     st_quote_of_name
-                                                        = str.find_first_of (
+                                                        = str.find (
                                                             '\"',
                                                             en_quote_of_name
                                                                 + 1);
@@ -1041,87 +976,13 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                                         remove_json_whitespace_between_delimeters (
                                             str, en_quote_of_name,
                                             first_double_point_after_name);
+                                    std::string obj_name;
 
-                                    std::size_t st_first_object_name
-                                        = str.find ("{\"",
-                                                    st_of_first_object + 1);
-                                    std::size_t en_first_object_name
-                                        = str.find ("\":",
-                                                    st_first_object_name + 1);
+                                    parse_internal_object (
+                                        str, st_quote_of_name,
+                                        en_quote_of_name, obj_name,
+                                        temp_value);
 
-                                    std::string obj_name = str.substr (
-                                        st_first_object_name + 1,
-                                        en_first_object_name
-                                            - st_first_object_name - 1);
-
-                                    std::string str_value = str.substr (
-                                        en_first_object_name + 2,
-                                        en_of_curr_object
-                                            - en_first_object_name - 2);
-
-                                    bool str_value_is_object
-                                        = cjparse_json_checkers::
-                                            cjparse_check_if_object (
-                                                str_value);
-                                    bool str_value_is_array
-                                        = cjparse_json_checkers::
-                                            cjparse_check_if_array (str_value);
-
-                                    bool str_value_is_string
-                                        = cjparse_json_checkers::
-                                            cjparse_check_if_value_string (
-                                                str_value);
-                                    bool str_value_is_number
-                                        = cjparse_json_checkers::
-                                            cjparse_check_if_value_number (
-                                                str_value);
-                                    bool str_value_is_bool
-                                        = cjparse_json_checkers::
-                                            cjparse_check_if_value_bool (
-                                                str_value);
-                                    bool str_value_is_null
-                                        = cjparse_json_checkers::
-                                            cjparse_check_if_value_null (
-                                                str_value);
-
-                                    if (str_value_is_object)
-                                        {
-                                            cjparse_parse_object (str_value,
-                                                                  temp_value);
-                                        }
-                                    if (str_value_is_array)
-                                        {
-                                            cjparse_parse_array (str_value,
-                                                                 temp_value);
-                                        }
-                                    if (str_value_is_array)
-                                        {
-                                            temp_value
-                                                = cjparse::cjparse_json_value (
-                                                    cjparse_parse_value_string (
-                                                        str_value));
-                                        }
-                                    if (str_value_is_array)
-                                        {
-                                            temp_value
-                                                = cjparse::cjparse_json_value (
-                                                    cjparse_parse_value_number (
-                                                        str_value));
-                                        }
-                                    if (str_value_is_array)
-                                        {
-                                            temp_value
-                                                = cjparse::cjparse_json_value (
-                                                    cjparse_parse_value_bool (
-                                                        str_value));
-                                        }
-                                    if (str_value_is_array)
-                                        {
-                                            temp_value
-                                                = cjparse::cjparse_json_value (
-                                                    cjparse_parse_value_null (
-                                                        str_value));
-                                        }
                                     object[obj_name] = temp_value;
                                     curr_st_of_nth_object
                                         = curr_end_of_nth_object;
@@ -1136,7 +997,7 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                                                 == '\\')
                                                 {
                                                     en_of_first_object
-                                                        = str.find_first_of (
+                                                        = str.find (
                                                             ',',
                                                             en_of_first_object
                                                                 + 1);
@@ -1155,21 +1016,19 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                                 = str.find ('}', st_of_object + 1);
 
                             std::size_t st_quote_of_name
-                                = str.find_first_of ('\"', st_of_object);
+                                = str.find ('\"', st_of_object);
                             cjparse::
                                 remove_json_whitespace_between_delimeters (
                                     str, 0, st_quote_of_name);
-                            std::size_t en_quote_of_name = str.find_first_of (
-                                '\"', st_quote_of_name + 1);
+                            std::size_t en_quote_of_name
+                                = str.find ('\"', st_quote_of_name + 1);
                             bool keepgoing = true;
                             while (keepgoing)
                                 {
                                     if (str[en_quote_of_name - 1] == '\\')
                                         {
-                                            st_quote_of_name
-                                                = str.find_first_of (
-                                                    '\"',
-                                                    en_quote_of_name + 1);
+                                            st_quote_of_name = str.find (
+                                                '\"', en_quote_of_name + 1);
                                             keepgoing = true;
                                         }
                                     else
@@ -1185,66 +1044,12 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                                     str, en_quote_of_name,
                                     first_double_point_after_name);
 
-                            std::size_t st_first_object_name
-                                = str.find ("{\"", st_of_object + 1);
-                            std::size_t en_first_object_name
-                                = str.find ("\":", st_first_object_name + 1);
+                            std::string obj_name;
 
-                            std::string obj_name
-                                = str.substr (st_first_object_name + 1,
-                                              en_first_object_name
-                                                  - st_first_object_name - 1);
+                            parse_internal_object (str, st_of_object,
+                                                   en_of_object, obj_name,
+                                                   temp_value);
 
-                            std::string str_value = str.substr (
-                                en_first_object_name + 2,
-                                en_of_object - en_first_object_name - 2);
-
-                            bool str_value_is_object = cjparse_json_checkers::
-                                cjparse_check_if_object (str_value);
-                            bool str_value_is_array = cjparse_json_checkers::
-                                cjparse_check_if_array (str_value);
-
-                            bool str_value_is_string = cjparse_json_checkers::
-                                cjparse_check_if_value_string (str_value);
-                            bool str_value_is_number = cjparse_json_checkers::
-                                cjparse_check_if_value_number (str_value);
-                            bool str_value_is_bool = cjparse_json_checkers::
-                                cjparse_check_if_value_bool (str_value);
-                            bool str_value_is_null = cjparse_json_checkers::
-                                cjparse_check_if_value_null (str_value);
-
-                            if (str_value_is_object)
-                                {
-                                    cjparse_parse_object (str_value,
-                                                          temp_value);
-                                }
-                            if (str_value_is_array)
-                                {
-                                    cjparse_parse_array (str_value,
-                                                         temp_value);
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_string (
-                                            str_value));
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_number (
-                                            str_value));
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_bool (str_value));
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_null (str_value));
-                                }
                             object[obj_name] = temp_value;
                         }
                     else
@@ -1252,98 +1057,12 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                             std::size_t st_of_object = en_of_first_object;
                             std::size_t en_of_object
                                 = str.find ('}', st_of_object + 1);
+                            std::string obj_name;
 
-                            std::size_t st_quote_of_name
-                                = str.find_first_of ('\"', st_of_object);
-                            cjparse::
-                                remove_json_whitespace_between_delimeters (
-                                    str, 0, st_quote_of_name);
-                            std::size_t en_quote_of_name = str.find_first_of (
-                                '\"', st_quote_of_name + 1);
-                            bool keepgoing = true;
-                            while (keepgoing)
-                                {
-                                    if (str[en_quote_of_name - 1] == '\\')
-                                        {
-                                            st_quote_of_name
-                                                = str.find_first_of (
-                                                    '\"',
-                                                    en_quote_of_name + 1);
-                                            keepgoing = true;
-                                        }
-                                    else
-                                        {
-                                            keepgoing = false;
-                                        }
-                                }
-                            std::size_t first_double_point_after_name
-                                = str.find (':', en_quote_of_name);
+                            parse_internal_object (str, st_of_object,
+                                                   en_of_object, obj_name,
+                                                   temp_value);
 
-                            cjparse::
-                                remove_json_whitespace_between_delimeters (
-                                    str, en_quote_of_name,
-                                    first_double_point_after_name);
-
-                            std::size_t st_first_object_name
-                                = str.find ("{\"", st_of_object + 1);
-                            std::size_t en_first_object_name
-                                = str.find ("\":", st_first_object_name + 1);
-
-                            std::string obj_name
-                                = str.substr (st_first_object_name + 1,
-                                              en_first_object_name
-                                                  - st_first_object_name - 1);
-
-                            std::string str_value = str.substr (
-                                en_first_object_name + 2,
-                                en_of_object - en_first_object_name - 2);
-
-                            bool str_value_is_object = cjparse_json_checkers::
-                                cjparse_check_if_object (str_value);
-                            bool str_value_is_array = cjparse_json_checkers::
-                                cjparse_check_if_array (str_value);
-
-                            bool str_value_is_string = cjparse_json_checkers::
-                                cjparse_check_if_value_string (str_value);
-                            bool str_value_is_number = cjparse_json_checkers::
-                                cjparse_check_if_value_number (str_value);
-                            bool str_value_is_bool = cjparse_json_checkers::
-                                cjparse_check_if_value_bool (str_value);
-                            bool str_value_is_null = cjparse_json_checkers::
-                                cjparse_check_if_value_null (str_value);
-
-                            if (str_value_is_object)
-                                {
-                                    cjparse_parse_object (str_value,
-                                                          temp_value);
-                                }
-                            if (str_value_is_array)
-                                {
-                                    cjparse_parse_array (str_value,
-                                                         temp_value);
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_string (
-                                            str_value));
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_number (
-                                            str_value));
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_bool (str_value));
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_null (str_value));
-                                }
                             object[obj_name] = temp_value;
                         }
                     value = cjparse::cjparse_json_value (object);
@@ -1354,91 +1073,11 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
             std::size_t st_of_object = 0;
             std::size_t en_of_object = str.find ('}', st_of_object + 1);
 
-            std::size_t st_quote_of_name
-                = str.find_first_of ('\"', st_of_object);
-            cjparse::remove_json_whitespace_between_delimeters (
-                str, 0, st_quote_of_name);
-            std::size_t en_quote_of_name
-                = str.find_first_of ('\"', st_quote_of_name + 1);
-            bool keepgoing = true;
-            while (keepgoing)
-                {
-                    if (str[en_quote_of_name - 1] == '\\')
-                        {
-                            st_quote_of_name = str.find_first_of (
-                                '\"', en_quote_of_name + 1);
-                            keepgoing = true;
-                        }
-                    else
-                        {
-                            keepgoing = false;
-                        }
-                }
-            std::size_t first_double_point_after_name
-                = str.find (':', en_quote_of_name);
+            std::string obj_name;
 
-            cjparse::remove_json_whitespace_between_delimeters (
-                str, en_quote_of_name, first_double_point_after_name);
+            parse_internal_object (str, st_of_object, en_of_object, obj_name,
+                                   temp_value);
 
-            std::size_t st_first_object_name
-                = str.find ("{\"", st_of_object + 1);
-            std::size_t en_first_object_name
-                = str.find ("\":", st_first_object_name + 1);
-
-            std::string obj_name
-                = str.substr (st_first_object_name + 1,
-                              en_first_object_name - st_first_object_name - 1);
-
-            std::string str_value
-                = str.substr (en_first_object_name + 2,
-                              en_of_object - en_first_object_name - 2);
-
-            bool str_value_is_object
-                = cjparse_json_checkers::cjparse_check_if_object (str_value);
-            bool str_value_is_array
-                = cjparse_json_checkers::cjparse_check_if_array (str_value);
-
-            bool str_value_is_string
-                = cjparse_json_checkers::cjparse_check_if_value_string (
-                    str_value);
-            bool str_value_is_number
-                = cjparse_json_checkers::cjparse_check_if_value_number (
-                    str_value);
-            bool str_value_is_bool
-                = cjparse_json_checkers::cjparse_check_if_value_bool (
-                    str_value);
-            bool str_value_is_null
-                = cjparse_json_checkers::cjparse_check_if_value_null (
-                    str_value);
-
-            if (str_value_is_object)
-                {
-                    cjparse_parse_object (str_value, temp_value);
-                }
-            if (str_value_is_array)
-                {
-                    cjparse_parse_array (str_value, temp_value);
-                }
-            if (str_value_is_array)
-                {
-                    temp_value = cjparse::cjparse_json_value (
-                        cjparse_parse_value_string (str_value));
-                }
-            if (str_value_is_array)
-                {
-                    temp_value = cjparse::cjparse_json_value (
-                        cjparse_parse_value_number (str_value));
-                }
-            if (str_value_is_array)
-                {
-                    temp_value = cjparse::cjparse_json_value (
-                        cjparse_parse_value_bool (str_value));
-                }
-            if (str_value_is_array)
-                {
-                    temp_value = cjparse::cjparse_json_value (
-                        cjparse_parse_value_null (str_value));
-                }
             object[obj_name] = temp_value;
             value = cjparse::cjparse_json_value (object);
         }
@@ -1506,3 +1145,89 @@ cjparse::remove_json_whitespace_outside_delimeters (std::string &str,
                 }
         }
 };
+
+void
+cjparse_json_parser::parse_internal_object (std::string &str,
+                                            std::size_t st_of_object,
+                                            std::size_t en_of_object,
+                                            std::string &obj_name,
+                                            cjparse::cjparse_json_value &value)
+{
+    std::size_t st_quote_of_name = str.find ('\"', st_of_object);
+    cjparse::remove_json_whitespace_between_delimeters (str, 0,
+                                                        st_quote_of_name);
+    std::size_t en_quote_of_name = str.find ('\"', st_quote_of_name + 1);
+    bool keepgoing_1 = true;
+    while (keepgoing_1)
+        {
+            if (str[en_quote_of_name - 1] == '\\')
+                {
+                    st_quote_of_name = str.find ('\"', en_quote_of_name + 1);
+                    keepgoing_1 = true;
+                }
+            else
+                {
+                    keepgoing_1 = false;
+                }
+        }
+    std::size_t first_double_point_after_name
+        = str.find (':', en_quote_of_name);
+
+    cjparse::remove_json_whitespace_between_delimeters (
+        str, en_quote_of_name, first_double_point_after_name);
+
+    std::size_t st_first_object_name = str.find ("{\"", st_of_object + 1);
+    std::size_t en_first_object_name
+        = str.find ("\":", st_first_object_name + 1);
+
+    obj_name = str.substr (st_first_object_name + 3,
+                           en_first_object_name - st_first_object_name - 3);
+
+    std::cout << obj_name << '\n';
+
+    std::string str_value = str.substr (
+        en_first_object_name + 2, en_of_object - en_first_object_name - 1);
+
+    bool str_value_is_object
+        = cjparse_json_checkers::cjparse_check_if_object (str_value);
+    bool str_value_is_array
+        = cjparse_json_checkers::cjparse_check_if_array (str_value);
+
+    bool str_value_is_string
+        = cjparse_json_checkers::cjparse_check_if_value_string (str_value);
+    bool str_value_is_number
+        = cjparse_json_checkers::cjparse_check_if_value_number (str_value);
+    bool str_value_is_bool
+        = cjparse_json_checkers::cjparse_check_if_value_bool (str_value);
+    bool str_value_is_null
+        = cjparse_json_checkers::cjparse_check_if_value_null (str_value);
+
+    if (str_value_is_object)
+        {
+            cjparse_parse_object (str_value, value);
+        }
+    if (str_value_is_array)
+        {
+            cjparse_parse_array (str_value, value);
+        }
+    if (str_value_is_array)
+        {
+            value = cjparse::cjparse_json_value (
+                cjparse_parse_value_string (str_value));
+        }
+    if (str_value_is_array)
+        {
+            value = cjparse::cjparse_json_value (
+                cjparse_parse_value_number (str_value));
+        }
+    if (str_value_is_array)
+        {
+            value = cjparse::cjparse_json_value (
+                cjparse_parse_value_bool (str_value));
+        }
+    if (str_value_is_array)
+        {
+            value = cjparse::cjparse_json_value (
+                cjparse_parse_value_null (str_value));
+        }
+}
