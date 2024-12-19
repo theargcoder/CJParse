@@ -113,4 +113,9 @@ class cjparse_json_parser
                                       cjparse::cjparse_json_value &value);
 
   private:
+    static void parse_internal_object (std::string &str,
+                                       std::size_t st_of_object,
+                                       std::size_t en_of_object,
+                                       std::string &obj_namae,
+                                       cjparse::cjparse_json_value &value);
 };
