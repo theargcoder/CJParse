@@ -118,4 +118,9 @@ class cjparse_json_parser
                                        std::size_t en_of_object,
                                        std::string &obj_namae,
                                        cjparse::cjparse_json_value &value);
+    static void check_if_prev_is_backlash (std::string &str,
+                                           std::size_t &position,
+                                           char pattern);
+    static void check_if_next_is_comma (std::string &str,
+                                        std::size_t &position, char pattern);
 };
