@@ -812,120 +812,97 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
 {
     cjparse::json_object object;
     cjparse::cjparse_json_value temp_value;
-    std::size_t start = 0;
-    std::size_t end = str.find (',', start + 1);
 
-    if (end != std::string::npos)
+    std::size_t st_of_object = str.find_first_of ('{', 0);
+    std::size_t en_of_object = str.find_last_of ('}', 0);
+
+    if (en_of_object != std::string::npos)
         {
-            check_if_prev_is_backlash (str, end, ',');
+            // ERROR BAD JSON (an object is missing end curly)
         }
 
-    if (end != std::string::npos)
+    bool keep_looping = true;
+    unsigned char state = 0;
+
+    std::size_t st_of_val, en_of_val, next_en_of_val;
+
+    while (keep_looping)
         {
-            bool done_the_first_one = false;
-            if (!done_the_first_one)
+            switch (state)
                 {
-                    std::size_t st_of_first_object = 0;
-                    std::size_t en_of_first_object
-                        = str.find (',', st_of_first_object + 1);
-                    check_if_prev_is_backlash (str, en_of_first_object, ',');
-
-                    std::string obj_name;
-
-                    parse_internal_object (str, st_of_first_object,
-                                           en_of_first_object, obj_name,
-                                           temp_value);
-                    object[obj_name] = temp_value;
-                    done_the_first_one = true;
-                }
-            else
-                {
-                    std::size_t st_of_first_object = 0;
-                    std::size_t en_of_first_object
-                        = str.find (',', st_of_first_object + 1);
-                    check_if_prev_is_backlash (str, en_of_first_object, ',');
-
-                    std::size_t curr_st_of_nth_object = en_of_first_object;
-                    std::size_t curr_end_of_nth_object
-                        = str.find (',', en_of_first_object + 1);
-                    check_if_prev_is_backlash (str, curr_end_of_nth_object,
-                                               ',');
-
-                    bool still_obj_to_parse
-                        = curr_end_of_nth_object != std::string::npos;
-                    if (still_obj_to_parse)
-                        {
-
-                            std::size_t st_of_curr_object
-                                = curr_st_of_nth_object;
-                            std::size_t en_of_curr_object
-                                = curr_end_of_nth_object;
-
-                            bool keeplooping = true;
-                            while (keeplooping)
-                                {
-                                    std::string obj_name;
-
-                                    parse_internal_object (
-                                        str, curr_st_of_nth_object,
-                                        curr_end_of_nth_object, obj_name,
-                                        temp_value);
-
-                                    object[obj_name] = temp_value;
-                                    curr_st_of_nth_object
-                                        = curr_end_of_nth_object;
-                                    std::size_t curr_end_of_nth_object
-                                        = str.find (',', curr_end_of_nth_object
-                                                             + 1);
-                                    check_if_prev_is_backlash (
-                                        str, curr_end_of_nth_object, ',');
-
-                                    keeplooping = curr_end_of_nth_object
-                                                  != std::string::npos;
-                                }
-                            std::size_t st_of_object = en_of_first_object;
-                            std::size_t en_of_object
-                                = str.find ('}', st_of_object + 1);
-                            check_if_prev_is_backlash (str, en_of_object, '}');
-
-                            std::string obj_name;
-
-                            parse_internal_object (str, st_of_object,
-                                                   en_of_object, obj_name,
-                                                   temp_value);
-
-                            object[obj_name] = temp_value;
-                        }
-                    else
-                        {
-                            std::size_t st_of_object = en_of_first_object;
-                            std::size_t en_of_object
-                                = str.find ('}', st_of_object + 1);
-                            check_if_prev_is_backlash (str, en_of_object, '}');
-                            std::string obj_name;
-
-                            parse_internal_object (str, st_of_object,
-                                                   en_of_object, obj_name,
-                                                   temp_value);
-
-                            object[obj_name] = temp_value;
-                        }
-                    value = cjparse::cjparse_json_value (object);
+                case 0: // check
+                    {
+                        en_of_val = str.find_first_of ({ ',', '{' },
+                                                       st_of_object + 1);
+                        state = 6;
+                        if (en_of_val == ',')
+                            state = 1;
+                    }
+                case 1: // first iteration
+                    {
+                        st_of_val = st_of_object;
+                        next_en_of_val
+                            = str.find_first_of ({ ',', '{' }, en_of_val + 1);
+                        state = 3;
+                    }
+                case 2:
+                    {
+                        st_of_val = en_of_val;
+                        en_of_val
+                            = str.find_first_of ({ ',', '{' }, en_of_val + 1);
+                        next_en_of_val
+                            = str.find_first_of ({ ',', '{' }, en_of_val + 1);
+                        state = 3;
+                    }
+                case 3: // check if out of bounds
+                    {
+                        if (en_of_object < en_of_val)
+                            {
+                                // BAD JSON
+                            }
+                        if (next_en_of_val != std::string::npos)
+                            state = 4;
+                        else
+                            state = 5;
+                    }
+                case 4: // parse the iteration
+                    {
+                        std::string obj_name;
+                        parse_internal_object (str, st_of_val, en_of_val,
+                                               obj_name, temp_value);
+                        object[obj_name] = temp_value;
+                        state = 2;
+                    }
+                case 5: // parse the iteration
+                    {
+                        std::string obj_name;
+                        parse_internal_object (str, st_of_val, en_of_val,
+                                               obj_name, temp_value);
+                        object[obj_name] = temp_value;
+                        state = 6;
+                    }
+                case 6: // parse the iteration
+                    {
+                        std::string obj_name;
+                        parse_internal_object (str, en_of_val,
+                                               en_of_object - 1, obj_name,
+                                               temp_value);
+                        object[obj_name] = temp_value;
+                        keep_looping = false;
+                    }
+                case 7: // unique iteration
+                    {
+                        en_of_val = str.find_last_of ('}', st_of_val);
+                        std::string obj_name;
+                        parse_internal_object (str, st_of_val, en_of_val,
+                                               obj_name, temp_value);
+                        object[obj_name] = temp_value;
+                        keep_looping = false;
+                    }
                 }
         }
-    else
-        {
-            std::size_t st_of_object = 0;
-            std::size_t en_of_object = str.find ('}', st_of_object + 1);
 
-            std::string obj_name;
-
-            parse_internal_object (str, st_of_object, en_of_object, obj_name,
-                                   temp_value);
-
-            object[obj_name] = temp_value;
-            value = cjparse::cjparse_json_value (object);
-        }
+    value = cjparse::cjparse_json_value (object);
 }
 
 cjparse::cjparse (std::string &str)
@@ -999,8 +976,6 @@ cjparse_json_parser::parse_internal_object (std::string &str,
                                             cjparse::cjparse_json_value &value)
 {
     std::size_t st_quote_of_name = str.find ('\"', st_of_object);
-    cjparse::remove_json_whitespace_between_delimeters (str, 0,
-                                                        st_quote_of_name);
     check_if_prev_is_backlash (str, st_quote_of_name, '\"');
 
     std::size_t en_quote_of_name = str.find ('\"', st_quote_of_name + 1);
@@ -1009,17 +984,30 @@ cjparse_json_parser::parse_internal_object (std::string &str,
         = str.find (':', en_quote_of_name);
     check_if_prev_is_backlash (str, first_double_point_after_name, ':');
 
-    cjparse::remove_json_whitespace_between_delimeters (
-        str, en_quote_of_name, first_double_point_after_name);
-
     obj_name = str.substr (st_quote_of_name + 1,
-                           en_quote_of_name - st_quote_of_name);
+                           en_quote_of_name - st_quote_of_name - 1);
 
-    std::cout << obj_name << '\n';
+    std::cout << "obj_name: " << obj_name << '\n'
+              << "obj_name IS DONE BRO" << '\n';
+
+    std::size_t st_of_value
+        = str.find_first_not_of ({ 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
+                                 first_double_point_after_name + 1);
+    std::size_t en_of_value
+        = str.find_first_of ({ ',', '}' }, st_of_value + 1);
+    while (str[en_of_value - 1] == '\\' && en_of_value != std::string::npos)
+        std::size_t en_of_value
+            = str.find_first_of ({ ',', '}' }, st_of_value + 1);
+    if (en_of_value != std::string::npos)
+        {
+            // ERROR
+        }
 
     std::string str_value
-        = str.substr (en_quote_of_name, en_of_object - en_quote_of_name - 1);
-    std::cout << str_value << '\n';
+        = str.substr (st_of_value, en_of_value - st_of_value + 1);
+
+    std::cout << "str_value: " << str_value << '\n'
+              << "std_value IS DONE BRO" << '\n';
 
     bool str_value_is_object
         = cjparse_json_checkers::cjparse_check_if_object (str_value);
