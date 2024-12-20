@@ -1,186 +1,68 @@
 #include "cjparse.h"
 
-bool
-cjparse_json_checkers::cjparse_check_if_object (std::string &str)
+unsigned char
+cjparse_json_parser::check_what_is_the_value (std::string &str)
 {
     if (str.length () == 0)
         {
             // ERROR 0;
         }
-    std::size_t first_curly_pos = str.find ('{', 0);
-    std::size_t first_square_pos = str.find ('[', 0);
-    std::size_t first_quote_pos = str.find ('\"', 0);
-
-    if ((first_curly_pos < first_square_pos)
-        && (first_curly_pos < first_quote_pos))
-        {
-            return true;
-        }
-    else
-        {
-            return false;
-        }
-};
-
-bool
-cjparse_json_checkers::cjparse_check_if_array (std::string &str)
-{
-    if (str.length () == 0)
-        {
-            // ERROR 0;
-        }
-    std::size_t first_curly_pos = str.find ('{', 0);
-    std::size_t first_square_pos = str.find ('[', 0);
-    std::size_t first_quote_pos = str.find ('\"', 0);
-
-    if ((first_square_pos < first_curly_pos)
-        && (first_square_pos < first_quote_pos))
-        {
-            return true;
-        }
-    else
-        {
-            return false;
-        }
-};
-
-bool
-cjparse_json_checkers::cjparse_check_if_value_string (std::string &str)
-{
-    if (str.length () == 0)
-        {
-            // ERROR 0
-        }
-    std::size_t first_curly_pos = str.find ('{', 0);
-    std::size_t first_square_pos = str.find ('[', 0);
-    std::size_t first_quote_pos = str.find ('\"', 0);
-
-    if ((first_quote_pos < first_curly_pos)
-        && (first_quote_pos < first_square_pos))
-        {
-            return true;
-        }
-    else
-        {
-            return false;
-        }
-};
-
-bool
-cjparse_json_checkers::cjparse_check_if_value_number (std::string &str)
-{
-    std::string str_cpy = str;
-
-    char whitespace[6] = { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b };
-    for (char chr : whitespace)
-        {
-            str_cpy.erase (remove (str_cpy.begin (), str_cpy.end (), chr),
-                           str_cpy.end ());
-        }
-    bool is_number = true;
-    for (char i : str_cpy)
-        {
-            if (!std::isdigit (i))
-                {
-                    if (!(i != 'e' || i == 'E' || i == '-' || i == '.'
-                          || i == '+'))
-                        {
-                            is_number = false;
-                        }
-                }
-        }
-    return is_number;
-};
-
-bool
-cjparse_json_checkers::cjparse_check_if_value_bool (std::string &str)
-{
-    std::string str_cpy = str;
-
-    char whitespace[6] = { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b };
-    for (char chr : whitespace)
-        {
-            str_cpy.erase (remove (str_cpy.begin (), str_cpy.end (), chr),
-                           str_cpy.end ());
-        }
-    if (str_cpy == "true" || str_cpy == "false")
-        {
-            return true;
-        }
-    else
-        {
-            return false;
-        }
-};
-
-bool
-cjparse_json_checkers::cjparse_check_if_value_null (std::string &str)
-{
-    std::string str_cpy = str;
-
-    char whitespace[6] = { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b };
-    for (char chr : whitespace)
-        {
-            str_cpy.erase (remove (str_cpy.begin (), str_cpy.end (), chr),
-                           str_cpy.end ());
-        }
-    if (str_cpy == "null")
-        {
-            return true;
-        }
-    else
-        {
-            return false;
-        }
+    std::size_t not_white_position
+        = str.find_first_not_of ({ 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b }, 0);
+    if (str[not_white_position] == '{')
+        return 1; // OBJECT
+    if (str[not_white_position] == '[')
+        return 2; // ARRAY
+    if (str[not_white_position] == '\"')
+        return 3; // STRING
+    if (std::isdigit (str[not_white_position]))
+        return 4; // NUMBER
+    if (str.substr (not_white_position, 4) == "true"
+        || str.substr (not_white_position, 5) == "false")
+        return 5; // BOOL
+    if (str.substr (not_white_position, 4) == "null")
+        return 6; // NULL
 };
 
 std::string
 cjparse_json_parser::cjparse_parse_value_string (std::string &str)
 {
     std::size_t st_of_string = str.find ('\"', 0);
-    std::size_t en_of_string = str.rfind ('\"', str.length () - 1);
+    std::size_t en_of_string = str.find ('\"', st_of_string + 1);
+    check_if_prev_is_backlash (str, en_of_string, '\"');
 
-    cjparse::remove_json_whitespace_outside_delimeters (str, st_of_string,
-                                                        en_of_string);
-    return str.substr (1, str.length () - 3);
+    return str.substr (st_of_string + 1, en_of_string - st_of_string - 2);
 }
 
 std::variant<int, long int, long long int, double, long double>
 cjparse_json_parser::cjparse_parse_value_number (std::string &str)
 {
-    char whitespace[6] = { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b };
-    for (char chr : whitespace)
+    std::size_t start_of_number
+        = str.find_first_not_of ({ 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b }, 0);
+    std::size_t end_of_number = str.find_first_of (
+        { ',', '\"', '{', '}', '[', ']', 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
+        0);
+    if (std::binary_search (str.begin (), str.end () - end_of_number, '.')
+        || std::binary_search (str.begin (), str.end () - end_of_number, 'e')
+        || std::binary_search (str.begin (), str.end () - end_of_number, 'E'))
         {
-            str.erase (remove (str.begin (), str.end (), chr), str.end ());
-        }
-    if (std::binary_search (str.begin (), str.end (), '.')
-        || std::binary_search (str.begin (), str.end (), 'e')
-        || std::binary_search (str.begin (), str.end (), 'E'))
-        {
-            return std::stod (str);
+            return std::stod (str.substr (
+                start_of_number, end_of_number - start_of_number - 1));
         }
     else
         {
-            return std::stoi (str);
+            return std::stoi (str.substr (
+                start_of_number, end_of_number - start_of_number - 1));
         }
 }
 
 bool
 cjparse_json_parser::cjparse_parse_value_bool (std::string &str)
 {
-    char whitespace[6] = { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b };
-    for (char chr : whitespace)
-        {
-            str.erase (remove (str.begin (), str.end (), chr), str.end ());
-        }
-    if (str == "true")
-        {
-            return true;
-        }
+    if (str.substr (0, 4) == "true")
+        return true;
     else
-        {
-            return false;
-        }
+        return false;
 }
 
 std::any
@@ -193,617 +75,86 @@ void
 cjparse_json_parser::cjparse_parse_array (std::string &str,
                                           cjparse::cjparse_json_value &value)
 {
+    // TO BE FIXXED SOON
     cjparse::json_array array;
     cjparse::cjparse_json_value temp_value;
-    std::size_t start = 0;
-    std::size_t end = str.find (',', start + 1);
+    std::size_t st_of_object = 0;
+    std::size_t en_of_object = str.length () - 1;
 
-    if (end != std::string::npos)
+    bool keep_looping = true;
+    int state = 0;
+
+    std::size_t st_of_val, en_of_val, next_en_of_val;
+
+    while (keep_looping)
         {
-            bool keepgoing_00 = true;
-            while (keepgoing_00 && (end != std::string::npos))
+            switch (state)
                 {
-                    if (str[end - 1] == '\\')
-                        {
-                            end = str.find (',', end + 1);
-                            keepgoing_00 = true;
-                        }
-                    else
-                        {
-                            keepgoing_00 = false;
-                        }
+                case 0: // initial check
+                    {
+                        st_of_val
+                            = str.find_first_of ({ ',', '[' }, st_of_object);
+                        en_of_val
+                            = str.find_first_of ({ ',', ']' }, st_of_val + 1);
+                        state = 1;
+                        if (en_of_val == std::string::npos)
+                            state = 6;
+                        if (en_of_val == std::string::npos)
+                            en_of_val = str.find_first_of ('}', st_of_val);
+                    }
+                case 1:
+                    {
+                        if (str[st_of_val] == '[' && str[en_of_val] == '[')
+                            state = 2;
+                        if (str[st_of_val] == '[' && str[en_of_val] == ',')
+                            state = 3;
+                        if (str[st_of_val] == ',' && str[en_of_val] == ',')
+                            state = 4;
+                        if (str[st_of_val] == ',' && str[en_of_val] == '[')
+                            state = 5;
+                    }
+                case 2: // First Iteration
+                    {
+                        parse_internal_array (str, st_of_object, en_of_object,
+                                              temp_value);
+                        array.push_back (temp_value);
+                        state = 0;
+                    }
+                case 3:
+                    {
+                        parse_internal_array (str, st_of_val, en_of_val,
+                                              temp_value);
+                        array.push_back (temp_value);
+                        state = 0;
+                    }
+                case 4:
+                    {
+                        parse_internal_array (str, st_of_val, en_of_val,
+                                              temp_value);
+                        array.push_back (temp_value);
+                        state = 0;
+                    }
+                case 5: // special case (obj of objs inside obj of objs)
+                    {
+                        next_en_of_val = cjparse_json_parser::
+                            return_the_matching_bracket (str, en_of_val, ']');
+                        parse_internal_array (str, en_of_val, next_en_of_val,
+                                              temp_value);
+                        array.push_back (temp_value);
+                        state = 0;
+                    }
+                case 6:
+                    {
+                        parse_internal_array (str, st_of_val, en_of_val,
+                                              temp_value);
+                        array.push_back (temp_value);
+                        keep_looping = false;
+                    }
                 }
         }
 
-    if (end != std::string::npos)
-        {
-            bool done_the_first_one = false;
-            if (!done_the_first_one)
-                {
-                    std::size_t st_of_first_object = 0;
-                    std::size_t en_of_first_object
-                        = str.find (',', st_of_first_object + 1);
-
-                    bool keepgoing_0 = true;
-                    while (keepgoing_0)
-                        {
-                            if (str[en_of_first_object - 1] == '\\')
-                                {
-                                    en_of_first_object = str.find (
-                                        ',', en_of_first_object + 1);
-                                    keepgoing_0 = true;
-                                }
-                            else
-                                {
-                                    keepgoing_0 = false;
-                                }
-                        }
-
-                    std::size_t st_quote_of_name
-                        = str.find ('\"', st_of_first_object);
-                    cjparse::remove_json_whitespace_between_delimeters (
-                        str, 0, st_quote_of_name);
-                    std::size_t en_quote_of_name
-                        = str.find ('\"', st_quote_of_name + 1);
-                    bool keepgoing_1 = true;
-                    while (keepgoing_1)
-                        {
-                            if (str[en_quote_of_name - 1] == '\\')
-                                {
-                                    st_quote_of_name = str.find (
-                                        '\"', en_quote_of_name + 1);
-                                    keepgoing_1 = true;
-                                }
-                            else
-                                {
-                                    keepgoing_1 = false;
-                                }
-                        }
-                    std::size_t first_double_point_after_name
-                        = str.find (':', en_quote_of_name);
-
-                    cjparse::remove_json_whitespace_between_delimeters (
-                        str, en_quote_of_name, first_double_point_after_name);
-
-                    std::size_t st_first_object_name
-                        = str.find ("{\"", st_of_first_object + 1);
-                    std::size_t en_first_object_name
-                        = str.find ("\":", st_first_object_name + 1);
-
-                    std::string obj_name = str.substr (
-                        st_first_object_name + 1,
-                        en_first_object_name - st_first_object_name - 1);
-
-                    std::string str_value = str.substr (
-                        en_first_object_name + 2,
-                        en_of_first_object - en_first_object_name - 2);
-
-                    bool str_value_is_object
-                        = cjparse_json_checkers::cjparse_check_if_object (
-                            str_value);
-                    bool str_value_is_array
-                        = cjparse_json_checkers::cjparse_check_if_array (
-                            str_value);
-
-                    bool str_value_is_string = cjparse_json_checkers::
-                        cjparse_check_if_value_string (str_value);
-                    bool str_value_is_number = cjparse_json_checkers::
-                        cjparse_check_if_value_number (str_value);
-                    bool str_value_is_bool
-                        = cjparse_json_checkers::cjparse_check_if_value_bool (
-                            str_value);
-                    bool str_value_is_null
-                        = cjparse_json_checkers::cjparse_check_if_value_null (
-                            str_value);
-
-                    if (str_value_is_object)
-                        {
-                            cjparse_parse_object (str_value, temp_value);
-                        }
-                    if (str_value_is_array)
-                        {
-                            cjparse_parse_array (str_value, temp_value);
-                        }
-                    if (str_value_is_array)
-                        {
-                            temp_value = cjparse::cjparse_json_value (
-                                cjparse_parse_value_string (str_value));
-                        }
-                    if (str_value_is_array)
-                        {
-                            temp_value = cjparse::cjparse_json_value (
-                                cjparse_parse_value_number (str_value));
-                        }
-                    if (str_value_is_array)
-                        {
-                            temp_value = cjparse::cjparse_json_value (
-                                cjparse_parse_value_bool (str_value));
-                        }
-                    if (str_value_is_array)
-                        {
-                            temp_value = cjparse::cjparse_json_value (
-                                cjparse_parse_value_null (str_value));
-                        }
-                    array.push_back (temp_value);
-                    done_the_first_one = true;
-                }
-            else
-                {
-                    std::size_t st_of_first_object = 0;
-                    std::size_t en_of_first_object
-                        = str.find (',', st_of_first_object + 1);
-
-                    bool keepgoing_0 = true;
-                    while (keepgoing_0)
-                        {
-                            if (str[en_of_first_object - 1] == '\\')
-                                {
-                                    en_of_first_object = str.find (
-                                        ',', en_of_first_object + 1);
-                                    keepgoing_0 = true;
-                                }
-                            else
-                                {
-                                    keepgoing_0 = false;
-                                }
-                        }
-                    std::size_t curr_st_of_nth_object = en_of_first_object;
-                    std::size_t curr_end_of_nth_object
-                        = str.find (',', en_of_first_object + 1);
-
-                    bool keepgoing_1 = true;
-                    while (keepgoing_1)
-                        {
-                            if (str[en_of_first_object - 1] == '\\'
-                                && curr_end_of_nth_object != std::string::npos)
-                                {
-                                    en_of_first_object = str.find (
-                                        ',', en_of_first_object + 1);
-                                    keepgoing_1 = true;
-                                }
-                            else
-                                {
-                                    keepgoing_1 = false;
-                                }
-                        }
-                    bool still_obj_to_parse
-                        = curr_end_of_nth_object != std::string::npos;
-                    if (still_obj_to_parse)
-                        {
-
-                            std::size_t st_of_curr_object
-                                = curr_st_of_nth_object;
-                            std::size_t en_of_curr_object
-                                = curr_end_of_nth_object;
-
-                            bool keeplooping = true;
-                            while (keeplooping)
-                                {
-                                    std::size_t st_quote_of_name
-                                        = str.find ('\"', st_of_first_object);
-                                    cjparse::
-                                        remove_json_whitespace_between_delimeters (
-                                            str, 0, st_quote_of_name);
-                                    std::size_t en_quote_of_name = str.find (
-                                        '\"', st_quote_of_name + 1);
-                                    bool keepgoing_1 = true;
-                                    while (keepgoing_1)
-                                        {
-                                            if (str[en_quote_of_name - 1]
-                                                    == '\\'
-                                                && en_quote_of_name
-                                                       != std::string::npos)
-                                                {
-                                                    st_quote_of_name
-                                                        = str.find (
-                                                            '\"',
-                                                            en_quote_of_name
-                                                                + 1);
-                                                    keepgoing_1 = true;
-                                                }
-                                            else
-                                                {
-                                                    keepgoing_1 = false;
-                                                }
-                                        }
-                                    std::size_t first_double_point_after_name
-                                        = str.find (':', en_quote_of_name);
-
-                                    cjparse::
-                                        remove_json_whitespace_between_delimeters (
-                                            str, en_quote_of_name,
-                                            first_double_point_after_name);
-
-                                    std::size_t st_first_object_name
-                                        = str.find ("{\"",
-                                                    st_of_first_object + 1);
-                                    std::size_t en_first_object_name
-                                        = str.find ("\":",
-                                                    st_first_object_name + 1);
-
-                                    std::string obj_name = str.substr (
-                                        st_first_object_name + 1,
-                                        en_first_object_name
-                                            - st_first_object_name - 1);
-
-                                    std::string str_value = str.substr (
-                                        en_first_object_name + 2,
-                                        en_of_curr_object
-                                            - en_first_object_name - 2);
-
-                                    bool str_value_is_object
-                                        = cjparse_json_checkers::
-                                            cjparse_check_if_object (
-                                                str_value);
-                                    bool str_value_is_array
-                                        = cjparse_json_checkers::
-                                            cjparse_check_if_array (str_value);
-
-                                    bool str_value_is_string
-                                        = cjparse_json_checkers::
-                                            cjparse_check_if_value_string (
-                                                str_value);
-                                    bool str_value_is_number
-                                        = cjparse_json_checkers::
-                                            cjparse_check_if_value_number (
-                                                str_value);
-                                    bool str_value_is_bool
-                                        = cjparse_json_checkers::
-                                            cjparse_check_if_value_bool (
-                                                str_value);
-                                    bool str_value_is_null
-                                        = cjparse_json_checkers::
-                                            cjparse_check_if_value_null (
-                                                str_value);
-
-                                    if (str_value_is_object)
-                                        {
-                                            cjparse_parse_object (str_value,
-                                                                  temp_value);
-                                        }
-                                    if (str_value_is_array)
-                                        {
-                                            cjparse_parse_array (str_value,
-                                                                 temp_value);
-                                        }
-                                    if (str_value_is_array)
-                                        {
-                                            temp_value
-                                                = cjparse::cjparse_json_value (
-                                                    cjparse_parse_value_string (
-                                                        str_value));
-                                        }
-                                    if (str_value_is_array)
-                                        {
-                                            temp_value
-                                                = cjparse::cjparse_json_value (
-                                                    cjparse_parse_value_number (
-                                                        str_value));
-                                        }
-                                    if (str_value_is_array)
-                                        {
-                                            temp_value
-                                                = cjparse::cjparse_json_value (
-                                                    cjparse_parse_value_bool (
-                                                        str_value));
-                                        }
-                                    if (str_value_is_array)
-                                        {
-                                            temp_value
-                                                = cjparse::cjparse_json_value (
-                                                    cjparse_parse_value_null (
-                                                        str_value));
-                                        }
-                                    array.push_back (temp_value);
-                                    curr_st_of_nth_object
-                                        = curr_end_of_nth_object;
-                                    std::size_t curr_end_of_nth_object
-                                        = str.find (',', curr_end_of_nth_object
-                                                             + 1);
-
-                                    bool keepgoing_2 = true;
-                                    while (keepgoing_2)
-                                        {
-                                            if (str[en_of_first_object - 1]
-                                                == '\\')
-                                                {
-                                                    en_of_first_object
-                                                        = str.find (
-                                                            ',',
-                                                            en_of_first_object
-                                                                + 1);
-                                                    keepgoing_2 = true;
-                                                }
-                                            else
-                                                {
-                                                    keepgoing_2 = false;
-                                                }
-                                        }
-                                    keeplooping = curr_end_of_nth_object
-                                                  != std::string::npos;
-                                }
-                            std::size_t st_of_object = en_of_first_object;
-                            std::size_t en_of_object
-                                = str.find ('}', st_of_object + 1);
-
-                            std::size_t st_quote_of_name
-                                = str.find ('\"', st_of_object);
-                            cjparse::
-                                remove_json_whitespace_between_delimeters (
-                                    str, 0, st_quote_of_name);
-                            std::size_t en_quote_of_name
-                                = str.find ('\"', st_quote_of_name + 1);
-                            bool keepgoing = true;
-                            while (keepgoing)
-                                {
-                                    if (str[en_quote_of_name - 1] == '\\')
-                                        {
-                                            st_quote_of_name = str.find (
-                                                '\"', en_quote_of_name + 1);
-                                            keepgoing = true;
-                                        }
-                                    else
-                                        {
-                                            keepgoing = false;
-                                        }
-                                }
-                            std::size_t first_double_point_after_name
-                                = str.find (':', en_quote_of_name);
-
-                            cjparse::
-                                remove_json_whitespace_between_delimeters (
-                                    str, en_quote_of_name,
-                                    first_double_point_after_name);
-
-                            std::size_t st_first_object_name
-                                = str.find ("{\"", st_of_object + 1);
-                            std::size_t en_first_object_name
-                                = str.find ("\":", st_first_object_name + 1);
-
-                            std::string obj_name
-                                = str.substr (st_first_object_name + 1,
-                                              en_first_object_name
-                                                  - st_first_object_name - 1);
-
-                            std::string str_value = str.substr (
-                                en_first_object_name + 2,
-                                en_of_object - en_first_object_name - 2);
-
-                            bool str_value_is_object = cjparse_json_checkers::
-                                cjparse_check_if_object (str_value);
-                            bool str_value_is_array = cjparse_json_checkers::
-                                cjparse_check_if_array (str_value);
-
-                            bool str_value_is_string = cjparse_json_checkers::
-                                cjparse_check_if_value_string (str_value);
-                            bool str_value_is_number = cjparse_json_checkers::
-                                cjparse_check_if_value_number (str_value);
-                            bool str_value_is_bool = cjparse_json_checkers::
-                                cjparse_check_if_value_bool (str_value);
-                            bool str_value_is_null = cjparse_json_checkers::
-                                cjparse_check_if_value_null (str_value);
-
-                            if (str_value_is_object)
-                                {
-                                    cjparse_parse_object (str_value,
-                                                          temp_value);
-                                }
-                            if (str_value_is_array)
-                                {
-                                    cjparse_parse_array (str_value,
-                                                         temp_value);
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_string (
-                                            str_value));
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_number (
-                                            str_value));
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_bool (str_value));
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_null (str_value));
-                                }
-                            array.push_back (temp_value);
-                        }
-                    else
-                        {
-                            std::size_t st_of_object = en_of_first_object;
-                            std::size_t en_of_object
-                                = str.find ('}', st_of_object + 1);
-
-                            std::size_t st_quote_of_name
-                                = str.find ('\"', st_of_object);
-                            cjparse::
-                                remove_json_whitespace_between_delimeters (
-                                    str, 0, st_quote_of_name);
-                            std::size_t en_quote_of_name
-                                = str.find ('\"', st_quote_of_name + 1);
-                            bool keepgoing = true;
-                            while (keepgoing)
-                                {
-                                    if (str[en_quote_of_name - 1] == '\\')
-                                        {
-                                            st_quote_of_name = str.find (
-                                                '\"', en_quote_of_name + 1);
-                                            keepgoing = true;
-                                        }
-                                    else
-                                        {
-                                            keepgoing = false;
-                                        }
-                                }
-                            std::size_t first_double_point_after_name
-                                = str.find (':', en_quote_of_name);
-
-                            cjparse::
-                                remove_json_whitespace_between_delimeters (
-                                    str, en_quote_of_name,
-                                    first_double_point_after_name);
-
-                            std::size_t st_first_object_name
-                                = str.find ("{\"", st_of_object + 1);
-                            std::size_t en_first_object_name
-                                = str.find ("\":", st_first_object_name + 1);
-
-                            std::string obj_name
-                                = str.substr (st_first_object_name + 1,
-                                              en_first_object_name
-                                                  - st_first_object_name - 1);
-
-                            std::string str_value = str.substr (
-                                en_first_object_name + 2,
-                                en_of_object - en_first_object_name - 2);
-
-                            bool str_value_is_object = cjparse_json_checkers::
-                                cjparse_check_if_object (str_value);
-                            bool str_value_is_array = cjparse_json_checkers::
-                                cjparse_check_if_array (str_value);
-
-                            bool str_value_is_string = cjparse_json_checkers::
-                                cjparse_check_if_value_string (str_value);
-                            bool str_value_is_number = cjparse_json_checkers::
-                                cjparse_check_if_value_number (str_value);
-                            bool str_value_is_bool = cjparse_json_checkers::
-                                cjparse_check_if_value_bool (str_value);
-                            bool str_value_is_null = cjparse_json_checkers::
-                                cjparse_check_if_value_null (str_value);
-
-                            if (str_value_is_object)
-                                {
-                                    cjparse_parse_object (str_value,
-                                                          temp_value);
-                                }
-                            if (str_value_is_array)
-                                {
-                                    cjparse_parse_array (str_value,
-                                                         temp_value);
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_string (
-                                            str_value));
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_number (
-                                            str_value));
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_bool (str_value));
-                                }
-                            if (str_value_is_array)
-                                {
-                                    temp_value = cjparse::cjparse_json_value (
-                                        cjparse_parse_value_null (str_value));
-                                }
-                            array.push_back (temp_value);
-                        }
-                    value = cjparse::cjparse_json_value (array);
-                }
-        }
-    else
-        {
-            std::size_t st_of_object = 0;
-            std::size_t en_of_object = str.find (']', st_of_object + 1);
-
-            std::size_t initial_comma = str.find (',', st_of_object);
-            bool keepgoing0 = true;
-            while (keepgoing0)
-                {
-                    if (str[initial_comma - 1] == '\\')
-                        {
-                            initial_comma = str.find ('\"', initial_comma + 1);
-                            keepgoing0 = true;
-                        }
-                    else
-                        {
-                            keepgoing0 = false;
-                        }
-                }
-
-            std::size_t final_comma = str.find (',', initial_comma + 1);
-            bool keepgoing1 = true;
-            while (keepgoing1)
-                {
-                    if (str[final_comma - 1] == '\\')
-                        {
-                            final_comma = str.find ('\"', final_comma + 1);
-                            keepgoing1 = true;
-                        }
-                    else
-                        {
-                            keepgoing1 = false;
-                        }
-                }
-
-            std::string str_value = str.substr (
-                initial_comma + 1, final_comma - initial_comma - 1);
-
-            bool str_value_is_object
-                = cjparse_json_checkers::cjparse_check_if_object (str_value);
-            bool str_value_is_array
-                = cjparse_json_checkers::cjparse_check_if_array (str_value);
-
-            bool str_value_is_string
-                = cjparse_json_checkers::cjparse_check_if_value_string (
-                    str_value);
-            bool str_value_is_number
-                = cjparse_json_checkers::cjparse_check_if_value_number (
-                    str_value);
-            bool str_value_is_bool
-                = cjparse_json_checkers::cjparse_check_if_value_bool (
-                    str_value);
-            bool str_value_is_null
-                = cjparse_json_checkers::cjparse_check_if_value_null (
-                    str_value);
-
-            if (str_value_is_object)
-                {
-                    cjparse_parse_object (str_value, temp_value);
-                }
-            if (str_value_is_array)
-                {
-                    cjparse_parse_array (str_value, temp_value);
-                }
-            if (str_value_is_array)
-                {
-                    temp_value = cjparse::cjparse_json_value (
-                        cjparse_parse_value_string (str_value));
-                }
-            if (str_value_is_array)
-                {
-                    temp_value = cjparse::cjparse_json_value (
-                        cjparse_parse_value_number (str_value));
-                }
-            if (str_value_is_array)
-                {
-                    temp_value = cjparse::cjparse_json_value (
-                        cjparse_parse_value_bool (str_value));
-                }
-            if (str_value_is_array)
-                {
-                    temp_value = cjparse::cjparse_json_value (
-                        cjparse_parse_value_null (str_value));
-                }
-            array.push_back (temp_value);
-            value = cjparse::cjparse_json_value (array);
-        }
+    array.push_back (temp_value);
+    value = cjparse::cjparse_json_value (array);
 }
 
 void
@@ -813,16 +164,11 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
     cjparse::json_object object;
     cjparse::cjparse_json_value temp_value;
 
-    std::size_t st_of_object = str.find_first_of ('{', 0);
-    std::size_t en_of_object = str.find_last_of ('}', 0);
-
-    if (en_of_object != std::string::npos)
-        {
-            // ERROR BAD JSON (an object is missing end curly)
-        }
+    std::size_t st_of_object = 0;
+    std::size_t en_of_object = str.length () - 1;
 
     bool keep_looping = true;
-    unsigned char state = 0;
+    int state = 0;
 
     std::size_t st_of_val, en_of_val, next_en_of_val;
 
@@ -830,73 +176,69 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
         {
             switch (state)
                 {
-                case 0: // check
+                case 0: // initial check
                     {
-                        en_of_val = str.find_first_of ({ ',', '{' },
-                                                       st_of_object + 1);
-                        state = 6;
-                        if (en_of_val == ',')
-                            state = 1;
-                    }
-                case 1: // first iteration
-                    {
-                        st_of_val = st_of_object;
-                        next_en_of_val
-                            = str.find_first_of ({ ',', '{' }, en_of_val + 1);
-                        state = 3;
-                    }
-                case 2:
-                    {
-                        st_of_val = en_of_val;
+                        st_of_val
+                            = str.find_first_of ({ ',', '{' }, st_of_object);
                         en_of_val
-                            = str.find_first_of ({ ',', '{' }, en_of_val + 1);
-                        next_en_of_val
-                            = str.find_first_of ({ ',', '{' }, en_of_val + 1);
-                        state = 3;
+                            = str.find_first_of ({ ',', '{' }, st_of_val + 1);
+                        state = 1;
+                        if (en_of_val == std::string::npos)
+                            state = 6;
+                        if (en_of_val == std::string::npos)
+                            en_of_val = str.find_first_of ('}', st_of_val);
                     }
-                case 3: // check if out of bounds
+                case 1:
                     {
-                        if (en_of_object < en_of_val)
-                            {
-                                // BAD JSON
-                            }
-                        if (next_en_of_val != std::string::npos)
+                        if (str[st_of_val] == '{' && str[en_of_val] == '{')
+                            state = 2;
+                        if (str[st_of_val] == '{' && str[en_of_val] == ',')
+                            state = 3;
+                        if (str[st_of_val] == ',' && str[en_of_val] == ',')
                             state = 4;
-                        else
+                        if (str[st_of_val] == ',' && str[en_of_val] == '{')
                             state = 5;
                     }
-                case 4: // parse the iteration
+                case 2: // First Iteration
                     {
-                        std::string obj_name;
-                        parse_internal_object (str, st_of_val, en_of_val,
-                                               obj_name, temp_value);
-                        object[obj_name] = temp_value;
-                        state = 2;
+                        std::string temp_str;
+                        parse_internal_object (str, st_of_object, en_of_object,
+                                               temp_str, temp_value);
+                        object[temp_str] = temp_value;
+                        state = 0;
                     }
-                case 5: // parse the iteration
+                case 3:
                     {
-                        std::string obj_name;
+                        std::string temp_str;
                         parse_internal_object (str, st_of_val, en_of_val,
-                                               obj_name, temp_value);
-                        object[obj_name] = temp_value;
-                        state = 6;
+                                               temp_str, temp_value);
+                        object[temp_str] = temp_value;
+                        state = 0;
                     }
-                case 6: // parse the iteration
+                case 4:
                     {
-                        std::string obj_name;
-                        parse_internal_object (str, en_of_val,
-                                               en_of_object - 1, obj_name,
-                                               temp_value);
-                        object[obj_name] = temp_value;
-                        keep_looping = false;
-                    }
-                case 7: // unique iteration
-                    {
-                        en_of_val = str.find_last_of ('}', st_of_val);
-                        std::string obj_name;
+                        std::string temp_str;
                         parse_internal_object (str, st_of_val, en_of_val,
-                                               obj_name, temp_value);
-                        object[obj_name] = temp_value;
+                                               temp_str, temp_value);
+                        object[temp_str] = temp_value;
+                        state = 0;
+                    }
+                case 5: // special case (obj of objs inside obj of objs)
+                    {
+                        std::string temp_str;
+                        next_en_of_val = cjparse_json_parser::
+                            return_the_matching_bracket (str, en_of_val, '{');
+                        parse_internal_object (str, en_of_val, next_en_of_val,
+                                               temp_str, temp_value);
+                        object[temp_str] = temp_value;
+                        state = 0;
+                    }
+                case 6:
+                    {
+                        std::string temp_str;
+                        parse_internal_object (str, st_of_val, en_of_val,
+                                               temp_str, temp_value);
+                        object[temp_str] = temp_value;
                         keep_looping = false;
                     }
                 }
@@ -908,13 +250,6 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
 cjparse::cjparse (std::string &str)
 {
     cjparse_json_parser::cjparse_parse_object (str, JSON);
-}
-
-void
-cjparse::parse_json_string (std::string &str)
-{
-    bool yeai = cjparse_json_checkers::cjparse_check_if_object (str);
-    // json.cjparse_json_object.
 }
 
 void
@@ -967,92 +302,6 @@ cjparse::remove_json_whitespace_outside_delimeters (std::string &str,
                 }
         }
 };
-
-void
-cjparse_json_parser::parse_internal_object (std::string &str,
-                                            std::size_t st_of_object,
-                                            std::size_t en_of_object,
-                                            std::string &obj_name,
-                                            cjparse::cjparse_json_value &value)
-{
-    std::size_t st_quote_of_name = str.find ('\"', st_of_object);
-    check_if_prev_is_backlash (str, st_quote_of_name, '\"');
-
-    std::size_t en_quote_of_name = str.find ('\"', st_quote_of_name + 1);
-    check_if_prev_is_backlash (str, en_quote_of_name, '\"');
-    std::size_t first_double_point_after_name
-        = str.find (':', en_quote_of_name);
-    check_if_prev_is_backlash (str, first_double_point_after_name, ':');
-
-    obj_name = str.substr (st_quote_of_name + 1,
-                           en_quote_of_name - st_quote_of_name - 1);
-
-    std::cout << "obj_name: " << obj_name << '\n'
-              << "obj_name IS DONE BRO" << '\n';
-
-    std::size_t st_of_value
-        = str.find_first_not_of ({ 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
-                                 first_double_point_after_name + 1);
-    std::size_t en_of_value
-        = str.find_first_of ({ ',', '}' }, st_of_value + 1);
-    while (str[en_of_value - 1] == '\\' && en_of_value != std::string::npos)
-        std::size_t en_of_value
-            = str.find_first_of ({ ',', '}' }, st_of_value + 1);
-    if (en_of_value != std::string::npos)
-        {
-            // ERROR
-        }
-
-    std::string str_value
-        = str.substr (st_of_value, en_of_value - st_of_value + 1);
-
-    std::cout << "str_value: " << str_value << '\n'
-              << "std_value IS DONE BRO" << '\n';
-
-    bool str_value_is_object
-        = cjparse_json_checkers::cjparse_check_if_object (str_value);
-    bool str_value_is_array
-        = cjparse_json_checkers::cjparse_check_if_array (str_value);
-
-    bool str_value_is_string
-        = cjparse_json_checkers::cjparse_check_if_value_string (str_value);
-    bool str_value_is_number
-        = cjparse_json_checkers::cjparse_check_if_value_number (str_value);
-    bool str_value_is_bool
-        = cjparse_json_checkers::cjparse_check_if_value_bool (str_value);
-    bool str_value_is_null
-        = cjparse_json_checkers::cjparse_check_if_value_null (str_value);
-
-    if (str_value_is_object)
-        {
-            cjparse_parse_object (str_value, value);
-        }
-    if (str_value_is_array)
-        {
-            cjparse_parse_array (str_value, value);
-        }
-    if (str_value_is_array)
-        {
-            value = cjparse::cjparse_json_value (
-                cjparse_parse_value_string (str_value));
-        }
-    if (str_value_is_array)
-        {
-            value = cjparse::cjparse_json_value (
-                cjparse_parse_value_number (str_value));
-        }
-    if (str_value_is_array)
-        {
-            value = cjparse::cjparse_json_value (
-                cjparse_parse_value_bool (str_value));
-        }
-    if (str_value_is_array)
-        {
-            value = cjparse::cjparse_json_value (
-                cjparse_parse_value_null (str_value));
-        }
-}
-
 void
 cjparse_json_parser::check_if_prev_is_backlash (std::string &str,
                                                 std::size_t &position,
@@ -1080,5 +329,174 @@ cjparse_json_parser::check_if_next_is_comma (std::string &str,
                 {
                     break; // Avoid infinite loop if no double-quote is found.
                 }
+        }
+}
+
+std::size_t
+cjparse_json_parser::return_the_matching_bracket (
+    std::string &str, std::size_t pos_of_bracket_to_match, char pattern)
+{
+    std::size_t size = str.length ();
+    char pattern_match;
+    if (pattern == '{')
+        pattern_match = '}';
+    if (pattern == '[')
+        pattern_match = ']';
+    if (pattern != '{' && pattern != '[')
+        return std::string::npos;
+
+    int numb_of_pattern_between = 0;
+    int numb_of_pattern_match_between = 0;
+    std::size_t pos_of_nearest_pattern_match
+        = str.find_first_of (pattern_match, pos_of_bracket_to_match);
+
+    for (std::size_t i = pos_of_nearest_pattern_match + 1;
+         i < pos_of_nearest_pattern_match; i++)
+        {
+            if (str[i] == pattern)
+                numb_of_pattern_between++;
+            if (str[i] == pattern_match)
+                numb_of_pattern_match_between++;
+        }
+
+    if (numb_of_pattern_between == 0)
+        return pos_of_nearest_pattern_match;
+    if (numb_of_pattern_between == 0 && numb_of_pattern_match_between != 0)
+        {
+        } // BIG FAT ERROR , HORRIBLE JSON
+
+    while (numb_of_pattern_between != numb_of_pattern_match_between)
+        {
+            pos_of_nearest_pattern_match = str.find_first_of (
+                pattern_match, pos_of_nearest_pattern_match + 1);
+
+            if (pos_of_nearest_pattern_match == std::string::npos)
+                break;
+
+            for (std::size_t i = pos_of_nearest_pattern_match + 1;
+                 i < pos_of_nearest_pattern_match; i++)
+                {
+                    if (str[i] == pattern)
+                        numb_of_pattern_between++;
+                    if (str[i] == pattern_match)
+                        numb_of_pattern_match_between++;
+                }
+        }
+
+    if (numb_of_pattern_between == numb_of_pattern_match_between)
+        return pos_of_nearest_pattern_match;
+
+    return std::string::npos;
+}
+
+void
+cjparse_json_parser::parse_internal_object (std::string &str,
+                                            std::size_t st_of_object,
+                                            std::size_t en_of_object,
+                                            std::string &obj_name,
+                                            cjparse::cjparse_json_value &value)
+{
+    std::size_t st_quote_of_name = str.find ('\"', st_of_object);
+    check_if_prev_is_backlash (str, st_quote_of_name, '\"');
+
+    std::size_t en_quote_of_name = str.find ('\"', st_quote_of_name + 1);
+    check_if_prev_is_backlash (str, en_quote_of_name, '\"');
+    std::size_t first_double_point_after_name
+        = str.find (':', en_quote_of_name);
+    check_if_prev_is_backlash (str, first_double_point_after_name, ':');
+
+    obj_name = str.substr (st_quote_of_name + 1,
+                           en_quote_of_name - st_quote_of_name - 1);
+
+    std::cout << "obj_name: " << obj_name << '\n';
+
+    std::size_t st_of_value
+        = str.find_first_not_of ({ 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
+                                 first_double_point_after_name + 1);
+    std::string str_value
+        = str.substr (st_of_value, en_of_object - st_of_value);
+
+    std::cout << "str_value: " << str_value << '\n';
+
+    unsigned char state_n = check_what_is_the_value (str_value);
+
+    switch (state_n)
+        {
+        case 1: // object
+            {
+                cjparse_parse_object (str_value, value);
+            }
+        case 2: // array
+            {
+                cjparse_parse_array (str_value, value);
+            }
+        case 3: // string
+            {
+                value = cjparse::cjparse_json_value (
+                    cjparse_parse_value_string (str_value));
+            }
+        case 4: // number
+            {
+                value = cjparse::cjparse_json_value (
+                    cjparse_parse_value_number (str_value));
+            }
+        case 5: // bool
+            {
+                value = cjparse::cjparse_json_value (
+                    cjparse_parse_value_bool (str_value));
+            }
+        case 6: // null
+            {
+                value = cjparse::cjparse_json_value (
+                    cjparse_parse_value_null (str_value));
+            }
+        }
+}
+
+void
+cjparse_json_parser::parse_internal_array (std::string &str,
+                                           std::size_t st_of_object,
+                                           std::size_t en_of_object,
+                                           cjparse::cjparse_json_value &value)
+{
+    std::size_t st_of_value = str.find_first_not_of (
+        { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b }, st_of_object + 1);
+    std::string str_value
+        = str.substr (st_of_value, en_of_object - st_of_value);
+
+    std::cout << "str_value: " << str_value << '\n';
+
+    unsigned char state_n = check_what_is_the_value (str_value);
+
+    switch (state_n)
+        {
+        case 1: // object
+            {
+                cjparse_parse_object (str_value, value);
+            }
+        case 2: // array
+            {
+                cjparse_parse_array (str_value, value);
+            }
+        case 3: // string
+            {
+                value = cjparse::cjparse_json_value (
+                    cjparse_parse_value_string (str_value));
+            }
+        case 4: // number
+            {
+                value = cjparse::cjparse_json_value (
+                    cjparse_parse_value_number (str_value));
+            }
+        case 5: // bool
+            {
+                value = cjparse::cjparse_json_value (
+                    cjparse_parse_value_bool (str_value));
+            }
+        case 6: // null
+            {
+                value = cjparse::cjparse_json_value (
+                    cjparse_parse_value_null (str_value));
+            }
         }
 }
