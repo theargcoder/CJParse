@@ -33,24 +33,24 @@ printJsonValue (const cjparse::cjparse_json_value &jsonValue)
                 }
             else if constexpr (std::is_same_v<T, cjparse::json_object>)
                 {
-                    std::cout << "{ ";
+                    std::cout << "\n{ ";
                     for (const auto &[key, value] : arg)
                         {
-                            std::cout << "\"" << key << "\": ";
+                            std::cout << " \"" << key << "\": ";
                             printJsonValue (value);
                             std::cout << ", ";
                         }
-                    std::cout << " }";
+                    std::cout << " }\n";
                 }
             else if constexpr (std::is_same_v<T, cjparse::json_array>)
                 {
-                    std::cout << "[ ";
+                    std::cout << "\n[ ";
                     for (const auto &element : arg)
                         {
                             printJsonValue (element);
                             std::cout << ", ";
                         }
-                    std::cout << " ]";
+                    std::cout << " ]\n";
                 }
         },
         jsonValue.value);

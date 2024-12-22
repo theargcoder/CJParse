@@ -96,7 +96,7 @@ class cjparse_json_parser
     static std::any cjparse_parse_value_null (std::string &str);
 
   private:
-    static unsigned char check_what_is_the_value (std::string &str);
+    static int check_what_is_the_value (std::string &str);
 
     static void check_if_prev_is_backlash (std::string &str,
                                            std::size_t &position,
@@ -104,4 +104,10 @@ class cjparse_json_parser
 
     static std::size_t return_the_matching_bracket (
         std::string &str, std::size_t pos_of_bracket_to_match, char pattern);
+
+    static void find_delimeters_check_if_comma_alter_state (
+        std::string &str, std::size_t &not_white_after_double_point,
+        std::size_t &initial_delimeter, std::size_t &final_delimeter,
+        std::size_t &not_white_position_after_final_delimeter,
+        int &state_to_alter, char patter_to_match);
 };
