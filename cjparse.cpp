@@ -5,27 +5,24 @@ cjparse::cjparse (std::string &str)
     cjparse_json_parser::cjparse_parse_value (str, JSON);
 }
 
-unsigned char
+int
 cjparse_json_parser::check_what_is_the_value (std::string &str)
 {
     if (str.length () == 0)
         {
             // ERROR 0;
         }
-    std::size_t not_white_position
-        = str.find_first_not_of ({ 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b }, 0);
-    if (str[not_white_position] == '{')
+    if (str[0] == '{')
         return 1; // OBJECT
-    if (str[not_white_position] == '[')
+    if (str[0] == '[')
         return 2; // ARRAY
-    if (str[not_white_position] == '\"')
+    if (str[0] == '\"')
         return 3; // STRING
-    if (std::isdigit (str[not_white_position]))
+    if (std::isdigit (str[0]))
         return 4; // NUMBER
-    if (str.substr (not_white_position, 4) == "true"
-        || str.substr (not_white_position, 5) == "false")
+    if (str == "true" || str == "false")
         return 5; // BOOL
-    if (str.substr (not_white_position, 4) == "null")
+    if (str == "null")
         return 6; // NULL
 };
 
@@ -42,15 +39,30 @@ cjparse_json_parser::cjparse_parse_value_string (std::string &str)
 std::variant<int, long int, long long int, double, long double>
 cjparse_json_parser::cjparse_parse_value_number (std::string &str)
 {
-    if (std::binary_search (str.begin (), str.end (), '.')
-        || std::binary_search (str.begin (), str.end (), 'e')
-        || std::binary_search (str.begin (), str.end (), 'E'))
+    std::string str_number_only;
+    for (char ch : str)
         {
-            return std::stod (str);
+            if (std::isdigit (ch))
+                str_number_only.push_back (ch);
+            if (ch == 'e' || ch == 'E')
+                str_number_only.push_back (ch);
+            if (ch == '.')
+                str_number_only.push_back (ch);
+            if (ch == '-' || ch == '+')
+                str_number_only.push_back (ch);
+        }
+    if (std::binary_search (str_number_only.begin (), str_number_only.end (),
+                            '.')
+        || std::binary_search (str_number_only.begin (),
+                               str_number_only.end (), 'e')
+        || std::binary_search (str_number_only.begin (),
+                               str_number_only.end (), 'E'))
+        {
+            return std::stod (str_number_only);
         }
     else
         {
-            return std::stoi (str);
+            return std::stoi (str_number_only);
         }
 }
 
@@ -76,10 +88,116 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
     // TO BE FIXXED SOON
     cjparse::json_array array;
     cjparse::cjparse_json_value temp_value;
-    std::size_t st_of_object = 0;
-    std::size_t en_of_object = str.length () - 1;
 
-    array.push_back (cjparse::cjparse_json_value (9));
+    std::size_t outter_initial_delimeter = str.find_first_of ('[', 0);
+    std::size_t outter_final_delimiter
+        = return_the_matching_bracket (str, outter_initial_delimeter, '[');
+
+    std::string obj_name, str_temp;
+
+    int state = -1;
+    bool keep_looping = true;
+
+    std::size_t initial_delimeter, final_delimeter = outter_initial_delimeter,
+                                   not_white_position_after_initial_delimeter,
+                                   not_white_position_after_final_delimiter;
+    while (keep_looping)
+        {
+            if (state == -1)
+                {
+                    not_white_position_after_initial_delimeter
+                        = str.find_first_not_of (
+                            { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
+                            final_delimeter + 1);
+
+                    not_white_position_after_final_delimiter
+                        = str.find_first_of (
+                            { ',', '}', ']' },
+                            not_white_position_after_initial_delimeter);
+
+                    str_temp = str.substr (
+                        not_white_position_after_initial_delimeter,
+                        not_white_position_after_final_delimiter
+                            - not_white_position_after_initial_delimeter);
+
+                    std::cout << "str_temp " << str_temp << '\n';
+
+                    state = check_what_is_the_value (str_temp);
+                    if (state == 4 || state == 5 || state == 6)
+                        state = 4;
+                }
+            if (state == 0)
+                {
+                    std::string str_value
+                        = str.substr (initial_delimeter,
+                                      final_delimeter - initial_delimeter);
+                    std::cout << "bewteen commas: " << str_value << "\n";
+                    cjparse_json_parser::cjparse_parse_value (str_value,
+                                                              temp_value);
+                    array.push_back (temp_value);
+                    state = -1;
+                }
+            if (state == 1)
+                {
+                    cjparse_json_parser::
+                        find_delimeters_check_if_comma_alter_state (
+                            str, not_white_position_after_final_delimiter,
+                            initial_delimeter, final_delimeter,
+                            not_white_position_after_final_delimiter, state,
+                            '{');
+                }
+            if (state == 2)
+                {
+                    cjparse_json_parser::
+                        find_delimeters_check_if_comma_alter_state (
+                            str, not_white_position_after_initial_delimeter,
+                            initial_delimeter, final_delimeter,
+                            not_white_position_after_final_delimiter, state,
+                            '[');
+                }
+            if (state == 3)
+                {
+                    cjparse_json_parser::
+                        find_delimeters_check_if_comma_alter_state (
+                            str, not_white_position_after_initial_delimeter,
+                            initial_delimeter, final_delimeter,
+                            not_white_position_after_final_delimiter, state,
+                            '\"');
+                }
+            if (state == 4)
+                {
+                    initial_delimeter
+                        = not_white_position_after_initial_delimeter;
+                    final_delimeter
+                        = str.find_first_of (',', initial_delimeter);
+                    state = 5;
+                    if (final_delimeter < outter_final_delimiter)
+                        state = 0;
+                }
+            if (state == 5)
+                {
+                    std::string str_value = str.substr (
+                        initial_delimeter,
+                        outter_final_delimiter - initial_delimeter);
+                    std::cout << "num/bool/null/final: " << str_value << '\n';
+                    cjparse_json_parser::cjparse_parse_value (str_value,
+                                                              temp_value);
+                    array.push_back (temp_value);
+                    keep_looping = false;
+                }
+            if (state == 6)
+                {
+                    std::string str_value
+                        = str.substr (initial_delimeter,
+                                      final_delimeter - initial_delimeter + 1);
+                    std::cout << "final obj/arr/str: " << str_value << '\n';
+                    cjparse_json_parser::cjparse_parse_value (str_value,
+                                                              temp_value);
+                    array.push_back (temp_value);
+                    keep_looping = false;
+                }
+        }
+
     value = cjparse::cjparse_json_value (array);
 }
 
@@ -94,143 +212,119 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
     std::size_t outter_final_delimiter
         = return_the_matching_bracket (str, outter_initial_delimeter, '{');
 
-    std::size_t st_of_name = str.find_first_of ('\"', 0);
-    std::size_t en_of_name = str.find_first_of ('\"', st_of_name + 1);
-    check_if_prev_is_backlash (str, en_of_name, '\"');
+    std::size_t st_of_name, en_of_name, double_point_after_name,
+        not_white_after_double_point;
+    std::string obj_name, str_temp;
 
-    std::string obj_name
-        = str.substr (st_of_name + 1, en_of_name - st_of_name - 2);
-
-    std::size_t double_point_after_name
-        = str.find_first_of (':', en_of_name + 1);
-    if (str[double_point_after_name - 1] == '\\')
-        {
-        } // HORRIBLE JSON
-
-    std::string str_temp
-        = str.substr (double_point_after_name, str.length () - 2);
-
-    unsigned char state = 5;
+    int state = -1;
     bool keep_looping = true;
-    unsigned char what_is_the_value = check_what_is_the_value (str_temp);
 
-    if (what_is_the_value == 1)
-        state = 0;
-    if (what_is_the_value == 2)
-        state = 3;
-    if (what_is_the_value == 3)
-        state = 4;
-
-    std::size_t initial_delimeter, final_delimeter,
-        not_white_position_after_final_delimiter;
+    std::size_t initial_delimeter, final_delimeter = outter_initial_delimeter,
+                                   not_white_position_after_final_delimiter;
     while (keep_looping)
         {
-            switch (state)
+            if (state == -1)
                 {
-                case 0: // initial computation if object has value of object
-                    {
-                        initial_delimeter
-                            = str.find_first_of ('{', double_point_after_name);
-                        final_delimeter = return_the_matching_bracket (
-                            str, initial_delimeter, '{');
-                        not_white_position_after_final_delimiter
-                            = str.find_first_not_of (
-                                { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
-                                final_delimeter + 1);
-                        state = 7;
-                        if (str[not_white_position_after_final_delimiter]
-                            == ',')
-                            state = 1;
-                    }
-                case 1:
-                    {
-                        std::string str_value
-                            = str.substr (initial_delimeter,
-                                          final_delimeter - initial_delimeter);
-                        cjparse_json_parser::cjparse_parse_object (str_value,
-                                                                   temp_value);
-                        object[obj_name] = temp_value;
-                        state = 2;
-                    }
-                case 2:
-                    {
-                        std::string str_cpy = str;
-                        str_cpy.erase (st_of_name,
-                                       not_white_position_after_final_delimiter
-                                           - st_of_name);
-                        cjparse_json_parser::cjparse_parse_value (str_cpy,
-                                                                  temp_value);
-                        object[obj_name] = temp_value;
-                        keep_looping = false;
-                    }
-                case 3:
-                    {
-                        initial_delimeter
-                            = str.find_first_of ('[', double_point_after_name);
-                        final_delimeter = return_the_matching_bracket (
-                            str, initial_delimeter, '[');
-                        not_white_position_after_final_delimiter
-                            = str.find_first_not_of (
-                                { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
-                                final_delimeter + 1);
-                        state = 7;
-                        if (str[not_white_position_after_final_delimiter]
-                            == ',')
-                            state = 1;
-                    }
-                case 4:
-                    {
-                        initial_delimeter = str.find_first_of ('\"', 0);
-                        final_delimeter
-                            = str.find_first_of ('\"', st_of_name + 1);
-                        check_if_prev_is_backlash (str, en_of_name, '\"');
+                    st_of_name = str.find_first_of ('\"', final_delimeter + 1);
+                    en_of_name = str.find_first_of ('\"', st_of_name + 1);
+                    check_if_prev_is_backlash (str, en_of_name, '\"');
 
-                        final_delimeter = str.find_first_not_of (
-                            { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
-                            final_delimeter + 1);
+                    obj_name = str.substr (st_of_name + 1,
+                                           en_of_name - st_of_name - 1);
+                    std::cout << "obj_name " << obj_name << '\n';
 
-                        state = 7;
-                        if (str[not_white_position_after_final_delimiter]
-                            == ',')
-                            state = 1;
-                    }
-                case 5:
-                    {
-                        initial_delimeter = str.find_first_not_of (
-                            { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
-                            double_point_after_name);
-                        final_delimeter
-                            = str.find_first_of (',', initial_delimeter);
+                    double_point_after_name
+                        = str.find_first_of (':', en_of_name + 1);
+                    if (str[double_point_after_name - 1] == '\\')
+                        {
+                        } // HORRIBLE JSON
 
-                        not_white_position_after_final_delimiter
-                            = str.find_first_not_of (
-                                { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
-                                final_delimeter);
-                        state = 6;
-                        if (str[not_white_position_after_final_delimiter]
-                            == ',')
-                            state = 1;
-                    }
-                case 6:
-                    {
-                        std::string str_value = str.substr (
-                            initial_delimeter,
-                            outter_final_delimiter - initial_delimeter);
-                        cjparse_json_parser::cjparse_parse_value (str_value,
-                                                                  temp_value);
-                        object[obj_name] = temp_value;
-                        keep_looping = false;
-                    }
-                case 7:
-                    {
-                        std::string str_value
-                            = str.substr (initial_delimeter,
-                                          final_delimeter - initial_delimeter);
-                        cjparse_json_parser::cjparse_parse_value (str_value,
-                                                                  temp_value);
-                        object[obj_name] = temp_value;
-                        keep_looping = false;
-                    }
+                    not_white_after_double_point = str.find_first_not_of (
+                        { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
+                        double_point_after_name + 1);
+
+                    not_white_position_after_final_delimiter
+                        = str.find_first_of ({ ',', '}', ']' },
+                                             not_white_after_double_point);
+
+                    str_temp
+                        = str.substr (not_white_after_double_point,
+                                      not_white_position_after_final_delimiter
+                                          - not_white_after_double_point);
+                    std::cout << "str_temp " << str_temp << '\n';
+
+                    state = check_what_is_the_value (str_temp);
+                    if (state == 4 || state == 5 || state == 6)
+                        state = 4;
+                }
+            if (state == 0)
+                {
+                    std::string str_value
+                        = str.substr (initial_delimeter,
+                                      not_white_position_after_final_delimiter
+                                          - initial_delimeter);
+                    std::cout << "bewteen commas: " << str_value << "\n";
+                    cjparse_json_parser::cjparse_parse_value (str_value,
+                                                              temp_value);
+                    object[obj_name] = temp_value;
+                    state = -1;
+                }
+            if (state == 1)
+                {
+                    cjparse_json_parser::
+                        find_delimeters_check_if_comma_alter_state (
+                            str, not_white_after_double_point,
+                            initial_delimeter, final_delimeter,
+                            not_white_position_after_final_delimiter, state,
+                            '{');
+                }
+            if (state == 2)
+                {
+                    cjparse_json_parser::
+                        find_delimeters_check_if_comma_alter_state (
+                            str, not_white_after_double_point,
+                            initial_delimeter, final_delimeter,
+                            not_white_position_after_final_delimiter, state,
+                            '[');
+                }
+            if (state == 3)
+                {
+                    cjparse_json_parser::
+                        find_delimeters_check_if_comma_alter_state (
+                            str, not_white_after_double_point,
+                            initial_delimeter, final_delimeter,
+                            not_white_position_after_final_delimiter, state,
+                            '\"');
+                }
+            if (state == 4)
+                {
+                    initial_delimeter = not_white_after_double_point;
+                    final_delimeter = not_white_position_after_final_delimiter;
+                    state = 5;
+                    if (final_delimeter < outter_final_delimiter)
+                        state = 0;
+                }
+            if (state == 5)
+                {
+                    std::string str_value = str.substr (
+                        initial_delimeter,
+                        outter_final_delimiter - initial_delimeter);
+                    std::cout << "num/bool/null/final: " << str_value << '\n';
+                    cjparse_json_parser::cjparse_parse_value (str_value,
+                                                              temp_value);
+                    object[obj_name] = temp_value;
+                    keep_looping = false;
+                }
+            if (state == 6)
+                {
+                    std::string str_value
+                        = str.substr (initial_delimeter,
+                                      final_delimeter - initial_delimeter + 1);
+                    std::cout << "final obj/arr/str: " << str_value << '\n';
+                    cjparse_json_parser::cjparse_parse_value (str_value,
+                                                              temp_value);
+                    object[obj_name] = temp_value;
+                    keep_looping = false;
                 }
         }
 
@@ -241,40 +335,36 @@ void
 cjparse_json_parser::cjparse_parse_value (std::string &str,
                                           cjparse::cjparse_json_value &value)
 {
-    unsigned char what_is_the_value = check_what_is_the_value (str);
-
-    switch (what_is_the_value)
+    int what_is_the_value = check_what_is_the_value (str);
+    if (what_is_the_value == 1)
         {
-        case 1: // OBJECT
-            {
-                std::cout << str << '\n';
-                cjparse_json_parser::cjparse_parse_object (str, value);
-            }
-        case 2: // ARRAY
-            {
-                std::cout << str << '\n';
-                cjparse_json_parser::cjparse_parse_array (str, value);
-            }
-        case 3: // STRING
-            {
-                std::cout << str << '\n';
-                value = cjparse_json_parser::cjparse_parse_value_string (str);
-            }
-        case 4: // NUMBER
-            {
-                std::cout << str << '\n';
-                value = cjparse_json_parser::cjparse_parse_value_number (str);
-            }
-        case 5: // BOOL
-            {
-                std::cout << str << '\n';
-                value = cjparse_json_parser::cjparse_parse_value_bool (str);
-            }
-        case 6: // NULL
-            {
-                std::cout << str << '\n';
-                cjparse_json_parser::cjparse_parse_value_null (str);
-            }
+            std::cout << "INPUT IS AN OBJECT" << '\n';
+            cjparse_json_parser::cjparse_parse_object (str, value);
+        }
+    if (what_is_the_value == 2)
+        {
+            std::cout << "INPUT IS A ARRAY" << '\n';
+            cjparse_json_parser::cjparse_parse_array (str, value);
+        }
+    if (what_is_the_value == 3)
+        {
+            std::cout << "INPUT IS A STRING" << '\n';
+            value = cjparse_json_parser::cjparse_parse_value_string (str);
+        }
+    if (what_is_the_value == 4)
+        {
+            std::cout << "INPUT IS A NUMBER" << '\n';
+            value = cjparse_json_parser::cjparse_parse_value_number (str);
+        }
+    if (what_is_the_value == 5)
+        {
+            std::cout << "INPUT IS A BOOL" << '\n';
+            value = cjparse_json_parser::cjparse_parse_value_bool (str);
+        }
+    if (what_is_the_value == 6)
+        {
+            std::cout << "INPUT IS A NULL" << '\n';
+            cjparse_json_parser::cjparse_parse_value_null (str);
         }
 }
 
@@ -356,4 +446,38 @@ cjparse_json_parser::return_the_matching_bracket (
                 }
         }
     return std::string::npos;
+}
+
+void
+cjparse_json_parser::find_delimeters_check_if_comma_alter_state (
+    std::string &str, std::size_t &not_white_after_double_point,
+    std::size_t &initial_delimeter, std::size_t &final_delimeter,
+    std::size_t &not_white_position_after_final_delimiter, int &state_to_alter,
+    char pattern_to_match)
+{
+    initial_delimeter
+        = str.find_first_of (pattern_to_match, not_white_after_double_point);
+    if (pattern_to_match != '\"')
+        {
+            final_delimeter = return_the_matching_bracket (
+                str, initial_delimeter, pattern_to_match);
+            not_white_position_after_final_delimiter = str.find_first_not_of (
+                { str[final_delimeter], 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
+                final_delimeter);
+        }
+    else
+        {
+            final_delimeter
+                = str.find_first_of (pattern_to_match, initial_delimeter + 1);
+            check_if_prev_is_backlash (str, final_delimeter, pattern_to_match);
+            not_white_position_after_final_delimiter = str.find_first_not_of (
+                { pattern_to_match, 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
+                final_delimeter);
+        }
+    state_to_alter = 6;
+    if (not_white_position_after_final_delimiter != std::string::npos)
+        {
+            if (str[not_white_position_after_final_delimiter] == ',')
+                state_to_alter = 0;
+        }
 }
