@@ -44,7 +44,7 @@ cjparse_json_print::print_json_from_memory (cjparse::cjparse_json_value &JSON)
 }
 
 void
-cjparse_json_print::print_json_value (cjparse::json_value &val)
+cjparse_json_print::print_json_value (const cjparse::json_value &val)
 {
     std::visit (
         [this] (auto &json_val) {
@@ -70,7 +70,7 @@ cjparse_json_print::print_json_value (cjparse::json_value &val)
 }
 
 void
-cjparse_json_print::print_json_number (cjparse::json_number &num)
+cjparse_json_print::print_json_number (const cjparse::json_number &num)
 {
     std::visit ([] (const auto &val) { std::cout << val; }, num);
 }
