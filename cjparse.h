@@ -16,6 +16,9 @@
 // Array       ex: [1, 2, 3, 4]
 // Bollean     ex: false
 // Null        ex: Null
+#pragma once
+#ifndef CJPARSE_H
+#define CJPARSE_H
 
 class cjparse
 {
@@ -23,10 +26,14 @@ class cjparse
     cjparse (std::string &str);
     cjparse (std::fstream &file);
 
-  public:
+  protected:
+    friend class cjparse_json_parser;
+    friend class cjparse_json_print;
+
+  protected:
     struct cjparse_json_value;
 
-  public:
+  protected:
     using json_null = std::any;
     using json_string = std::string;
     using json_number
@@ -38,17 +45,7 @@ class cjparse
     using json_value = std::variant<json_object, json_array, json_null,
                                     json_string, json_number, bool>;
 
-  public:
-    char whitespace[6] = { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b };
-
-    json_null null;
-    json_string string;
-    bool j_bool;
-
-    json_object cjparse_json_object;
-    json_array cjparse_json_array;
-
-  public:
+  protected:
     struct cjparse_json_value
     {
         json_value value;
@@ -61,10 +58,6 @@ class cjparse
         cjparse_json_value (json_string jstr) : value (jstr) {}
         cjparse_json_value (json_number jnum) : value (jnum) {}
     };
-
-  public:
-    friend class cjparse_json_checkers;
-    friend class cjparse_json_parser;
 
   public:
     cjparse_json_value JSON;
@@ -111,3 +104,5 @@ class cjparse_json_parser
         std::size_t &not_white_position_after_final_delimeter,
         int &state_to_alter, char patter_to_match);
 };
+
+#endif // CJPARSE_H
