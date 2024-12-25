@@ -28,7 +28,7 @@ class cjparse
 
   protected:
     friend class cjparse_json_parser;
-    friend class cjparse_json_print;
+    friend class cjparse_json_generator;
 
   protected:
     struct cjparse_json_value;
@@ -95,14 +95,15 @@ class cjparse_json_parser
                                            std::size_t &position,
                                            char pattern);
 
-    static std::size_t return_the_matching_bracket (
-        std::string &str, std::size_t pos_of_bracket_to_match, char pattern);
+    static std::size_t
+    return_the_matching_pattern (std::string &str,
+                                 std::size_t pos_of_bracket_to_match,
+                                 char pattern, char patter_to_match);
 
     static void find_delimeters_check_if_comma_alter_state (
-        std::string &str, std::size_t &not_white_after_double_point,
-        std::size_t &initial_delimeter, std::size_t &final_delimeter,
-        std::size_t &not_white_position_after_final_delimeter,
-        int &state_to_alter, char patter_to_match);
+        std::string &str, std::size_t &initial_delimeter,
+        std::size_t &final_delimeter,
+        std::size_t &not_white_position_after_final_delimeter, char pattern);
 };
 
 #endif // CJPARSE_H
