@@ -1,8 +1,9 @@
-#include "cjparse.h"
+#include "cjparse_json_parser.h"
 
-cjparse::cjparse (std::string &str)
+cjparse_json_parser::cjparse_json_parser (
+    std::string &str, cjparse::cjparse_json_value &JSON_container)
 {
-    cjparse_json_parser::cjparse_parse_value (str, JSON);
+    cjparse_parse_value (str, JSON_container);
 }
 
 int
@@ -14,16 +15,18 @@ cjparse_json_parser::check_what_is_the_value (std::string &str)
         }
     if (str[0] == '{')
         return 1; // OBJECT
-    if (str[0] == '[')
+    else if (str[0] == '[')
         return 2; // ARRAY
-    if (str[0] == '\"')
+    else if (str[0] == '\"')
         return 3; // STRING
-    if (std::isdigit (str[0]) || str[0] == '-')
+    else if (std::isdigit (str[0]) || str[0] == '-')
         return 4; // NUMBER
-    if (str == "true" || str == "false")
+    else if (str == "true" || str == "false")
         return 5; // BOOL
-    if (str == "null")
+    else if (str == "null")
         return 6; // NULL
+    else
+        return 0; // bad JSON
 };
 
 std::string
