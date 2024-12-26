@@ -7,7 +7,7 @@
 ## **Features**
 
 ### **Parsing JSON**
-- Converts any JSON file into a `CJParse` struct, storing the original contents exactly as they appear in memory.
+- Converts any JSON string into a `CJParse` struct, containing all the contents of the JSON string.
 - **Compact and portable**: The only dependency is the C++ Standard Library.
 - **Internal Classes**:
   - A dedicated parser for handling JSON strings.
