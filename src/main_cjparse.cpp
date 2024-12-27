@@ -59,7 +59,7 @@ main ()
 {
     // Create the parser with the given JSON string (assuming cjparse class has
     // a constructor that takes a string)
-    cjparse parser (json_3);
+    cjparse parser (json_2);
 
     // Print the JSON structure
     std::cout << "Parsed JSON: \n";

@@ -54,12 +54,12 @@ cjparse_json_parser::cjparse_parse_value_number (std::string &str)
             if (ch == '-' || ch == '+')
                 str_number_only.push_back (ch);
         }
-    if (std::binary_search (str_number_only.begin (), str_number_only.end (),
-                            '.')
-        || std::binary_search (str_number_only.begin (),
-                               str_number_only.end (), 'e')
-        || std::binary_search (str_number_only.begin (),
-                               str_number_only.end (), 'E'))
+    if (std::find (str_number_only.begin (), str_number_only.end (), '.')
+            != str_number_only.end ()
+        || std::find (str_number_only.begin (), str_number_only.end (), 'e')
+               != str_number_only.end ()
+        || std::find (str_number_only.begin (), str_number_only.end (), 'E')
+               != str_number_only.end ())
         {
             std::cout << "parsed DOUBLE " << std::stod (str_number_only)
                       << '\n';
