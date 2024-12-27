@@ -49,9 +49,8 @@
 
 ## **Important Notes**
 
-- **Limitations** *(as of Dec 25th, 2024)*:
-  - Decimal places are not parsed correctly (**fix pending**).
-  - Parsing exponential numbers may cause errors or exceptions (**investigating**).
+- **Limitations** *(as of Dec 26th, 2024)*:
+  - There are no known limitations as of the above listed date.
 - **Error Handling** *(planned)*:
   - No current support for exceptions or error messages pinpointing parsing issues. These features will be added in upcoming updates.  
 
