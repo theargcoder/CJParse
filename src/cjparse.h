@@ -5,6 +5,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <variant>
 
 // JSON DATA TYPES
@@ -31,7 +32,7 @@ class cjparse
   protected:
     struct cjparse_json_value;
 
-  protected:
+  public:
     using json_null = std::any;
     using json_string = std::string;
     using json_number
@@ -59,6 +60,20 @@ class cjparse
 
   public:
     cjparse_json_value JSON;
+
+  public:
+    /*
+     * returns the value of the object with inputted name
+     * of type "cjparse::json_value"
+     * returns 'std::variant::variant_npos' if obj with name not found
+     */
+    std::optional<json_value> return_the_value (std::string &name);
+    /*
+     * searches for the value of object with inputted name and returns true
+     * if it is what function name describes (obj, array, number, etc)
+     * returns 'std::nullopt' if obj with name not found
+     */
+    template <class T> std::optional<bool> check_if_type (std::string &name);
 
   private:
 };
