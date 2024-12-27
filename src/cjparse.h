@@ -3,10 +3,8 @@
 #include <exception>
 #include <iostream>
 #include <map>
-#include <mutex>
 #include <optional>
 #include <string>
-#include <thread>
 #include <variant>
 
 // JSON DATA TYPES
@@ -24,7 +22,7 @@ class cjparse
 {
   public:
     cjparse (std::string &str);
-    cjparse (std::fstream &file);
+    cjparse (std::stringstream &file);
 
   protected:
     friend class cjparse_json_parser;
@@ -63,47 +61,6 @@ class cjparse
     cjparse_json_value JSON;
 
   private:
-};
-
-class cjparse_json_parser
-{
-  public:
-    // modify by reference the container due to nesting
-    static void cjparse_parse_value (std::string &str,
-                                     cjparse::cjparse_json_value &value);
-
-    static void cjparse_parse_array (std::string &str,
-                                     cjparse::cjparse_json_value &value);
-
-    static void cjparse_parse_object (std::string &str,
-                                      cjparse::cjparse_json_value &value);
-
-    // assign value by returning it
-    static std::string cjparse_parse_value_string (std::string &str);
-
-    static std::variant<int, long int, long long int, double, long double>
-    cjparse_parse_value_number (std::string &str);
-
-    static bool cjparse_parse_value_bool (std::string &str);
-
-    static std::any cjparse_parse_value_null (std::string &str);
-
-  private:
-    static int check_what_is_the_value (std::string &str);
-
-    static void check_if_prev_is_backlash (std::string &str,
-                                           std::size_t &position,
-                                           char pattern);
-
-    static std::size_t
-    return_the_matching_pattern (std::string &str,
-                                 std::size_t pos_of_bracket_to_match,
-                                 char pattern, char patter_to_match);
-
-    static void find_delimeters_check_if_comma_alter_state (
-        std::string &str, std::size_t &initial_delimeter,
-        std::size_t &final_delimeter,
-        std::size_t &not_white_position_after_final_delimeter, char pattern);
 };
 
 #endif // CJPARSE_H
