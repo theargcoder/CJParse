@@ -92,10 +92,10 @@ main ()
         {
             if (shouldnt_be_null == true)
                 std::cout << "object named: " << obj_name
-                          << "  has value type object" << '\n';
+                          << "  has value type T (tempate)" << '\n';
             else
                 std::cout << "object named: " << obj_name
-                          << " has value type NOT object" << '\n';
+                          << " has value type NOT T (template)" << '\n';
         }
     else
         {
