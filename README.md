@@ -21,9 +21,9 @@
 
 ## **Classes Overview**
 
-### `cjparse_json_parser`
-- **Purpose**: Parses input JSON strings into memory.
-- **Design Details**:
+### `cjparse`
+- **Purpose**: Main constructor of the library, alows user to interact with stored JSON in memory via an API, also defines the JSON datatypes
+- **JSON datatypes Details**:
   - **Objects**: Stored in an unordered map (`std::unordered_map`). Original order is **not preserved** for efficiency; access by key is prioritized.
   - **Arrays**: Stored in a vector (`std::vector`) with their **original order preserved**.
   - **JSON Values**: Mapped to their C++ equivalents:
@@ -31,6 +31,26 @@
     - **JSON Number** → `int` or `double` (based on type)
     - **JSON Bool** → `bool`
     - **JSON Null** → `std::any` (*subject to change*)
+-**API**
+  - **return_the_value**: returns the value of the object with inputted name
+    - *input* -> `std::string &`
+    - *returns* -> `std::optional<json_value>`
+    - *exception* -> returns `std::variant::variant_npos` if obj with name not found.
+  - **check_if_type**: searches for the value of a json_object with inputted name, does so on the first layer of JSON.
+    - *input* -> `std::string &`
+    - *returns* -> `std::optional<bool>`
+        *true* -> if object with name  `name` exists and havs value of template definition.
+        *false* -> if object with name  `name` exists and DOES NOT value of template definition.
+    - *exception* -> returns `std::nullopt` if obj with name not found.
+  - **check_if_type_in_tree** **NOT FINISHED YET** 
+
+---
+### `cjparse_json_parser`
+- **Purpose**: Parses input JSON strings into memory inside cjparse class, this class is called internally by cjparse.
+- **NOTE**: End user should never have to interact with this class.
+- **Design Details**:
+  - **Parsing functions**: These 7 functions can correctly parse nested and non nested JSON **They call each other when nested types are detected and to parse values correctly**.
+  - **Checking function**: Provide easy to use methods to verify if the JSON inputted string has x pattern.
 
 ---
 
