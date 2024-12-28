@@ -69,11 +69,34 @@ class cjparse
      */
     std::optional<json_value> return_the_value (std::string &name);
     /*
-     * searches for the value of object with inputted name and returns true
-     * if it is what function name describes (obj, array, number, etc)
-     * returns 'std::nullopt' if obj with name not found
+     * searches for the value of object with inputted name in the first layer
+     * of json tree
+     * returns true if obj with name "name" exists and has value of what the
+     * function name describes (obj, array, number, etc)
+     * returns false if object with name "name" exists and has value NOT of
+     * what the function name describes (obj, array, number, etc)
+     * 'std::nullopt' if obj with name "name" was not found
      */
     template <class T> std::optional<bool> check_if_type (std::string &name);
+    /*
+     * searches for the value of object with inputted name int the FULL json
+     * tree
+     * returns true if it obj with name "name" exists and obj with name
+     * "name" has value of what the function name describes (obj, array,
+     * number, etc)
+     * returns true if it obj with name "name" exists and obj with name
+     * "name" has value NOT of what the function name describes (obj, array,
+     * number, etc)
+     * returns 'std::nullopt' if obj with name not found in the full JSON
+     */
+
+    template <class T>
+    std::optional<bool> check_if_type_in_tree (std::string &name);
+
+  private:
+    template <class T>
+    void check_if_type_in_tree_helper (std::optional<bool> &bool_to_alter,
+                                       std::string &name, json_value &value);
 
   private:
 };

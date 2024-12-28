@@ -59,7 +59,7 @@ main ()
 {
     // Create the parser with the given JSON string (assuming cjparse class has
     // a constructor that takes a string)
-    cjparse parser (json_2);
+    cjparse parser (json_1);
 
     // Print the JSON structure
     std::cout << "Parsed JSON: \n";
@@ -84,6 +84,23 @@ main ()
         {
             std::cout << "object named: " << obj_name << " was not found "
                       << '\n';
+        }
+    obj_name = "City";
+    std::optional<bool> shouldnt_be_null
+        = parser.check_if_type_in_tree<cjparse::json_string> (obj_name);
+    if (shouldnt_be_null != std::nullopt)
+        {
+            if (shouldnt_be_null == true)
+                std::cout << "object named: " << obj_name
+                          << "  has value type object" << '\n';
+            else
+                std::cout << "object named: " << obj_name
+                          << " has value type NOT object" << '\n';
+        }
+    else
+        {
+            std::cout << "object named: " << obj_name
+                      << " was not found in the tree" << '\n';
         }
     return 0;
 };

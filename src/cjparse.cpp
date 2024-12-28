@@ -55,3 +55,71 @@ cjparse::check_if_type (std::string &name)
             return std::nullopt; // json is object but key "name" doesnt exist.
         }
 }
+
+template <class T>
+void
+cjparse::check_if_type_in_tree_helper (std::optional<bool> &bool_to_alter,
+                                       std::string &name, json_value &value_in)
+{
+    if (std::holds_alternative<json_object> (value_in))
+        {
+            auto &json_obj = std::get<json_object> (value_in);
+            auto it = json_obj.begin ();
+
+            while (it
+                   != json_obj.end ()) // json is object and key 'name' exists
+                {
+                    if (it->first == name)
+                        {
+                            if (std::is_same_v<
+                                    std::decay_t<decltype (it->second.value)>,
+                                    T>)
+                                bool_to_alter = true;
+                            else
+                                bool_to_alter = false;
+                            break;
+                        }
+                    else if (std::is_same_v<
+                                 std::decay_t<decltype (it->second.value)>,
+                                 json_object>)
+                        {
+                            check_if_type_in_tree_helper<T> (
+                                bool_to_alter, name, it->second.value);
+                        }
+                    it++;
+                }
+        }
+    else if (std::holds_alternative<json_array> (value_in))
+        {
+            auto &json_obj = std::get<json_array> (value_in);
+            auto it = json_obj.begin ();
+
+            while (it != json_obj.end ())
+                {
+                    if (std::is_same_v<std::decay_t<decltype (it->value)>,
+                                       json_object>)
+                        check_if_type_in_tree_helper<T> (bool_to_alter, name,
+                                                         it->value);
+                    else if (std::is_same_v<std::decay_t<decltype (it->value)>,
+                                            json_array>)
+                        check_if_type_in_tree_helper<T> (bool_to_alter, name,
+                                                         it->value);
+                    it++;
+                }
+        }
+}
+
+template <class T>
+std::optional<bool>
+cjparse::check_if_type_in_tree (std::string &name)
+{
+    std::optional<bool> bool_to_return;
+
+    json_value value;
+
+    std::visit ([&value] (auto &value_in) { value = value_in; }, JSON.value);
+
+    check_if_type_in_tree_helper<T> (bool_to_return, name, value);
+
+    return bool_to_return;
+}
