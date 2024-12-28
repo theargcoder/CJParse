@@ -32,17 +32,32 @@
     - **JSON Bool** → `bool`
     - **JSON Null** → `std::any` (*subject to change*)
 -**API**
-  - **return_the_value**: returns the value of the object with inputted name
+  - **return_the_value**: returns the value of the object with inputted name **IN THE FIRST LAYER OF JSON**
     - *input* -> `std::string &`
-    - *returns* -> `std::optional<json_value>`
-    - *exception* -> returns `std::variant::variant_npos` if obj with name not found.
+    - *returns* -> `json_value`
+    - *exception* -> returns `std::variant::variant_npos` aka empty `json_value` if obj with name not found.
+  - **return_the_value_in_tree**: returns the value of the first intance found of object with inputted name **IN FULL JSON TREE**
+    - *input* -> `std::string &`
+    - *returns* -> `json_value`
+    - *exception* -> returns `std::variant::variant_npos` aka empty `json_value` if obj with name not found.
   - **check_if_type**: searches for the value of a json_object with inputted name, does so on the first layer of JSON.
     - *input* -> `std::string &`
-    - *returns* -> `std::optional<bool>`
+    - *returns* -> `bool`
         *true* -> if object with name  `name` exists and havs value of template definition.
         *false* -> if object with name  `name` exists and DOES NOT value of template definition.
-    - *exception* -> returns `std::nullopt` if obj with name not found.
-  - **check_if_type_in_tree** **NOT FINISHED YET** 
+    - *exception* -> the internal function returns `std::nullopt` if obj with name not found, (*will implement a method to check if this happned soon*).
+   - **check_if_type_in_tree**: searches for the value of a json_object with inputted name IN THE FULL JSON tree.
+    - *input* -> `std::string &`
+    - *returns* -> `bool`
+        *true* -> if object with name  `name` exists and havs value of template definition.
+        *false* -> if object with name  `name` exists and DOES NOT value of template definition.
+    - *exception* -> the internal function returns `std::nullopt` if obj with name not found, (*will implement a method to check if this happned soon*).
+  - **check_if_type_inside_object**: searches for the value of a json_object with inputted name inside of the object container with inputted name IN THE FULL JSON tree.
+    - *input* -> `std::string &` and `std::string &`
+    - *returns* -> `bool`
+        *true* -> if object with name  `name` inside of object with `name_of_obj` exists and havs value of template definition.
+        *false* -> if object with name  `name` inside of object with `name_of_obj` DOES NOT have value of template definition.
+    - *exception* -> the internal function returns `std::nullopt` if object with `name` or object with `name_of_obj` was not found, (*will implement a method to check if this happned soon*).
 
 ---
 ### `cjparse_json_parser`
@@ -57,6 +72,8 @@
 ### `cjparse_json_generator`
 - **Purpose**: Generates JSON strings from parsed or newly created JSON objects.
 - **Key Features**:
+  - **2 overloads**:
+    - can input either type `cjparse::json_value` or struct `cjparse::cjparse_json_value` and will produce proper JSON for both with formatting options listed below
   - **Customizable Output**:
     1. **Compact Mode** (`pretty = false`): Produces a minimal JSON string.
     2. **Pretty Mode** (`pretty = true`): Outputs a human-readable JSON string.
@@ -69,6 +86,8 @@
 
 ## **Important Notes**
 
+- **API** *not finished*:
+  - unceritain of the expected behaviors of `return_the_value` and `return_the_value_in_tree` will need to do more testing.
 - **Limitations** *(as of Dec 26th, 2024)*:
   - There are no known limitations as of the above listed date.
 - **Error Handling** *(planned)*:
