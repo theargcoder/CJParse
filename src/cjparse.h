@@ -62,12 +62,20 @@ class cjparse
     cjparse_json_value JSON;
 
   public:
+    json_value return_the_value (std::string &name_to_return_value);
+    /*
+     * returns the value of the object with inputted name in
+     * the first layer of json
+     * returns type "cjparse::json_value"
+     * 'std::variant::variant_npos' if obj with name not found
+     */
+    json_value return_the_value_in_tree (std::string &name_to_return_value);
     /*
      * returns the value of the object with inputted name
-     * of type "cjparse::json_value"
+     * of type "cjparse::json_value" in the first layer of json
      * returns 'std::variant::variant_npos' if obj with name not found
      */
-    std::optional<json_value> return_the_value (std::string &name);
+    template <class T> bool check_if_type (std::string &name_to_check_if_type);
     /*
      * searches for the value of object with inputted name in the first layer
      * of json tree
@@ -77,10 +85,12 @@ class cjparse
      * what the function name describes (obj, array, number, etc)
      * 'std::nullopt' if obj with name "name" was not found
      */
-    template <class T> std::optional<bool> check_if_type (std::string &name);
+
+    template <class T>
+    bool check_if_type_in_tree (std::string &name_to_check_if_type);
     /*
      * searches for the value of object with inputted name int the FULL json
-     * tree
+     * tree returns the value of first obj with name it finds
      * returns true if it obj with name "name" exists and obj with name
      * "name" has value of what the function name describes (obj, array,
      * number, etc)
@@ -89,11 +99,34 @@ class cjparse
      * number, etc)
      * returns 'std::nullopt' if obj with name not found in the full JSON
      */
-
     template <class T>
-    std::optional<bool> check_if_type_in_tree (std::string &name);
+    bool check_if_type_inside_object (std::string &name_of_object_container,
+                                      std::string &name_to_check_if_type);
 
   private:
+    std::optional<json_value>
+    return_the_value_internal (std::string &name_to_return_value);
+
+    std::optional<json_value>
+    return_the_value_in_tree_internal (std::string &name_to_return_value);
+
+    template <class T>
+    std::optional<bool>
+    check_if_type_internal (std::string &name_to_check_if_type);
+
+    template <class T>
+    std::optional<bool>
+    check_if_type_in_tree_internal (std::string &name_to_check_if_type);
+
+    template <class T>
+    std::optional<bool> check_if_type_inside_object_internal (
+        std::string &name_of_object_container,
+        std::string &name_to_check_if_type);
+
+  private:
+    void
+    return_the_value_in_tree_helper (std::optional<json_value> &value_to_alter,
+                                     std::string &name, json_value &value);
     template <class T>
     void check_if_type_in_tree_helper (std::optional<bool> &bool_to_alter,
                                        std::string &name, json_value &value);

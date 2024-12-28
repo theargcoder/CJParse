@@ -7,6 +7,14 @@ cjparse_json_generator::cjparse_json_generator (
     print_json_from_memory (JSON);
 }
 
+cjparse_json_generator::cjparse_json_generator (cjparse::json_value &JSON,
+                                                bool generate_pretty_json)
+{
+    pretty = generate_pretty_json;
+    cjparse::cjparse_json_value new_value (JSON);
+    print_json_from_memory (new_value);
+}
+
 void
 cjparse_json_generator::print_json_from_memory (
     cjparse::cjparse_json_value &JSON)
