@@ -66,5 +66,24 @@ main ()
     cjparse_json_generator JSON_gen
         = cjparse_json_generator (parser.JSON, true);
     std::cout << JSON_gen.JSON_string << "\n";
+
+    std::string obj_name = "Image";
+    std::optional<bool> will_be_null
+        = parser.check_if_type<cjparse::json_object> (
+            obj_name); // will return nullopt
+    if (will_be_null != std::nullopt)
+        {
+            if (will_be_null == true)
+                std::cout << "object named: " << obj_name
+                          << "  has value type object" << '\n';
+            else
+                std::cout << "object named: " << obj_name
+                          << " has value type NOT object" << '\n';
+        }
+    else
+        {
+            std::cout << "object named: " << obj_name << " was not found "
+                      << '\n';
+        }
     return 0;
 };
