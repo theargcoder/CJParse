@@ -15,17 +15,17 @@ std::string json_2 = R"({
             "Animated" : false,
             "IDs": [116, 943, 234, 38793]
           },
-        "Image": {
-            "Width":  800,
-            "Height": 600,
-            "Title":  "View from 15th Floor",
+        "Image2": {
+            "Width":  200,
+            "Height": 900,
+            "Title":  "View from 10th Floor",
             "Thumbnail": {
-                "Url":    "http://www.example.com/image/481989943",
-                "Height": 125,
-                "Width":  100
+                "Url":    "http://www.example.com/image/92837592",
+                "Height": 260,
+                "Width": 1000 
             },
-            "Animated" : false,
-            "IDs": [116, 943, 234, 38793]
+            "Animated" : true,
+            "IDs": [899, 831, 254, 648953]
           }
       })";
 
@@ -59,7 +59,7 @@ main ()
 {
     // Create the parser with the given JSON string (assuming cjparse class has
     // a constructor that takes a string)
-    cjparse parser (json_1);
+    cjparse parser (json_2);
 
     // Print the JSON structure
     std::cout << "Parsed JSON: \n";
@@ -67,7 +67,15 @@ main ()
         = cjparse_json_generator (parser.JSON, true);
     std::cout << JSON_gen.JSON_string << "\n";
 
-    std::string obj_name = "Image";
+    // testing return_value
+    std::string obj_name = "Image2";
+    cjparse::json_value value_of_obj_name = parser.return_the_value (obj_name);
+    JSON_gen = cjparse_json_generator (value_of_obj_name, true);
+    std::cout << "here it comes return the value : " << '\n'
+              << JSON_gen.JSON_string << '\n';
+
+    // testing check_if_type
+    obj_name = "Image";
     std::optional<bool> will_be_null
         = parser.check_if_type<cjparse::json_object> (
             obj_name); // will return nullopt
@@ -85,6 +93,8 @@ main ()
             std::cout << "object named: " << obj_name << " was not found "
                       << '\n';
         }
+
+    // testing check_if_type_in_tree
     obj_name = "City";
     std::optional<bool> shouldnt_be_null
         = parser.check_if_type_in_tree<cjparse::json_string> (obj_name);
@@ -102,5 +112,6 @@ main ()
             std::cout << "object named: " << obj_name
                       << " was not found in the tree" << '\n';
         }
+
     return 0;
 };

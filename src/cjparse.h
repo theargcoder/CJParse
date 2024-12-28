@@ -62,23 +62,20 @@ class cjparse
     cjparse_json_value JSON;
 
   public:
-    std::optional<json_value>
-    return_the_value (std::string &name_to_return_value);
+    json_value return_the_value (std::string &name_to_return_value);
     /*
      * returns the value of the object with inputted name in
      * the first layer of json
      * returns type "cjparse::json_value"
      * 'std::variant::variant_npos' if obj with name not found
      */
-    std::optional<json_value>
-    return_the_value_in_tree (std::string &name_to_return_value);
+    json_value return_the_value_in_tree (std::string &name_to_return_value);
     /*
      * returns the value of the object with inputted name
      * of type "cjparse::json_value" in the first layer of json
      * returns 'std::variant::variant_npos' if obj with name not found
      */
-    template <class T>
-    std::optional<bool> check_if_type (std::string &name_to_check_if_type);
+    template <class T> bool check_if_type (std::string &name_to_check_if_type);
     /*
      * searches for the value of object with inputted name in the first layer
      * of json tree
@@ -90,8 +87,7 @@ class cjparse
      */
 
     template <class T>
-    std::optional<bool>
-    check_if_type_in_tree (std::string &name_to_check_if_type);
+    bool check_if_type_in_tree (std::string &name_to_check_if_type);
     /*
      * searches for the value of object with inputted name int the FULL json
      * tree returns the value of first obj with name it finds
@@ -104,9 +100,28 @@ class cjparse
      * returns 'std::nullopt' if obj with name not found in the full JSON
      */
     template <class T>
+    bool check_if_type_inside_object (std::string &name_of_object_container,
+                                      std::string &name_to_check_if_type);
+
+  private:
+    std::optional<json_value>
+    return_the_value_internal (std::string &name_to_return_value);
+
+    std::optional<json_value>
+    return_the_value_in_tree_internal (std::string &name_to_return_value);
+
+    template <class T>
     std::optional<bool>
-    check_if_type_inside_object (std::string &name_of_object_container,
-                                 std::string &name_to_check_if_type);
+    check_if_type_internal (std::string &name_to_check_if_type);
+
+    template <class T>
+    std::optional<bool>
+    check_if_type_in_tree_internal (std::string &name_to_check_if_type);
+
+    template <class T>
+    std::optional<bool> check_if_type_inside_object_internal (
+        std::string &name_of_object_container,
+        std::string &name_to_check_if_type);
 
   private:
     void
