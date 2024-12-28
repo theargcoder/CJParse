@@ -31,33 +31,34 @@
     - **JSON Number** → `int` or `double` (based on type)
     - **JSON Bool** → `bool`
     - **JSON Null** → `std::any` (*subject to change*)
--**API**
-  - **return_the_value**: returns the value of the object with inputted name **IN THE FIRST LAYER OF JSON**
+      
+- **API** so you the end user can interact with the library
+  - **`return_the_value`**: returns the value of the object with inputted name **IN THE FIRST LAYER OF JSON**
     - *input* -> `std::string &`
     - *returns* -> `json_value`
     - *exception* -> returns `std::variant::variant_npos` aka empty `json_value` if obj with name not found.
-  - **return_the_value_in_tree**: returns the value of the first intance found of object with inputted name **IN FULL JSON TREE**
+  - **`return_the_value_in_tree`**: returns the value of the first intance found of object with inputted name **IN FULL JSON TREE**
     - *input* -> `std::string &`
     - *returns* -> `json_value`
     - *exception* -> returns `std::variant::variant_npos` aka empty `json_value` if obj with name not found.
-  - **check_if_type**: searches for the value of a json_object with inputted name, does so on the first layer of JSON.
+  - **`check_if_type`**: searches for the value of a json_object with inputted name, does so on the first layer of JSON.
     - *input* -> `std::string &`
     - *returns* -> `bool`
-        *true* -> if object with name  `name` exists and havs value of template definition.
-        *false* -> if object with name  `name` exists and DOES NOT value of template definition.
-    - *exception* -> the internal function returns `std::nullopt` if obj with name not found, (*will implement a method to check if this happned soon*).
-   - **check_if_type_in_tree**: searches for the value of a json_object with inputted name IN THE FULL JSON tree.
-    - *input* -> `std::string &`
-    - *returns* -> `bool`
-        *true* -> if object with name  `name` exists and havs value of template definition.
-        *false* -> if object with name  `name` exists and DOES NOT value of template definition.
-    - *exception* -> the internal function returns `std::nullopt` if obj with name not found, (*will implement a method to check if this happned soon*).
-  - **check_if_type_inside_object**: searches for the value of a json_object with inputted name inside of the object container with inputted name IN THE FULL JSON tree.
+      - *true* -> if object with name  `name` exists and havs value of template definition.
+      - *false* -> if object with name  `name` exists and DOES NOT value of template definition.
+      - *exception* -> the internal function returns `std::nullopt` if obj with name not found, (*will implement a method to check if this happned soon*).
+   - **`check_if_type_in_tree`**: searches for the value of a json_object with inputted name IN THE FULL JSON tree.
+      - *input* -> `std::string &`
+      - *returns* -> `bool`
+         -  *true* -> if object with name  `name` exists and havs value of template definition.
+         -  *false* -> if object with name  `name` exists and DOES NOT value of template definition.
+         - *exception* -> the internal function returns `std::nullopt` if obj with name not found, (*will implement a method to check if this happned soon*).
+  - **`check_if_type_inside_object`**: searches for the value of a json_object with inputted name inside of the object container with inputted name IN THE FULL JSON tree.
     - *input* -> `std::string &` and `std::string &`
     - *returns* -> `bool`
-        *true* -> if object with name  `name` inside of object with `name_of_obj` exists and havs value of template definition.
-        *false* -> if object with name  `name` inside of object with `name_of_obj` DOES NOT have value of template definition.
-    - *exception* -> the internal function returns `std::nullopt` if object with `name` or object with `name_of_obj` was not found, (*will implement a method to check if this happned soon*).
+      - *true* -> if object with name  `name` inside of object with `name_of_obj` exists and havs value of template definition.
+      - *false* -> if object with name  `name` inside of object with `name_of_obj` DOES NOT have value of template definition.
+      - *exception* -> the internal function returns `std::nullopt` if object with `name` or object with `name_of_obj` was not found, (*will implement a method to check if this happned soon*).
 
 ---
 ### `cjparse_json_parser`
