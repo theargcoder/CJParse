@@ -11,7 +11,37 @@ cjparse_json_generator::cjparse_json_generator (cjparse::json_value &JSON,
                                                 bool generate_pretty_json)
 {
     pretty = generate_pretty_json;
-    cjparse::cjparse_json_value new_value (JSON);
+    cjparse::cjparse_json_value new_value;
+    if (std::holds_alternative<cjparse::json_object> (JSON))
+        {
+            new_value = cjparse::cjparse_json_value (
+                std::get<cjparse::json_object> (JSON));
+        }
+    else if (std::holds_alternative<cjparse::json_array> (JSON))
+        {
+            new_value = cjparse::cjparse_json_value (
+                std::get<cjparse::json_array> (JSON));
+        }
+    else if (std::holds_alternative<cjparse::json_string> (JSON))
+        {
+            new_value = cjparse::cjparse_json_value (
+                std::get<cjparse::json_string> (JSON));
+        }
+    else if (std::holds_alternative<cjparse::json_number> (JSON))
+        {
+            new_value = cjparse::cjparse_json_value (
+                std::get<cjparse::json_number> (JSON));
+        }
+    else if (std::holds_alternative<bool> (JSON))
+        {
+            new_value = cjparse::cjparse_json_value (std::get<bool> (JSON));
+        }
+    else if (std::holds_alternative<cjparse::json_null> (JSON))
+        {
+            new_value = cjparse::cjparse_json_value (
+                std::get<cjparse::json_null> (JSON));
+        }
+
     print_json_from_memory (new_value);
 }
 
