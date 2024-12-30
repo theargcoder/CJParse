@@ -79,7 +79,6 @@ cjparse::return_the_value_internal (std::string &name)
                             cjparse_json_generator generat
                                 = cjparse_json_generator (it->second.value,
                                                           true);
-                            std::cout << generat.JSON_string << '\n';
                             return it->second.value;
                         }
                     it++;

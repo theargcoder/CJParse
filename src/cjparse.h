@@ -75,6 +75,14 @@ class cjparse
      * of type "cjparse::json_value" in the first layer of json
      * returns 'std::variant::variant_npos' if obj with name not found
      */
+    json_value
+    return_the_value_inside_object (std::string &name_of_object_container,
+                                    std::string &name_to_return_value);
+    /*
+     * returns the value of the object with inputted name
+     * of type "cjparse::json_value" in the first layer of json
+     * returns 'std::variant::variant_npos' if obj with name not found
+     */
     template <class T> bool check_if_type (std::string &name_to_check_if_type);
     /*
      * searches for the value of object with inputted name in the first layer

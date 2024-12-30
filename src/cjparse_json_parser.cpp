@@ -61,8 +61,6 @@ cjparse_json_parser::cjparse_parse_value_number (std::string &str)
         || std::find (str_number_only.begin (), str_number_only.end (), 'E')
                != str_number_only.end ())
         {
-            std::cout << "parsed DOUBLE " << std::stod (str_number_only)
-                      << '\n';
             return std::stod (str_number_only);
         }
     else
@@ -126,7 +124,6 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                     str_temp = str.substr (curr_outer_initial_delimeter,
                                            not_white_after_curr_outer_initial
                                                - curr_outer_initial_delimeter);
-                    std::cout << "str_temp_array " << str_temp << '\n';
                     int temp_state = check_what_is_the_value (str_temp);
                     if (temp_state == 1 || temp_state == 2 || temp_state == 3)
                         state = 1;
@@ -187,7 +184,6 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                         = str.substr (curr_outer_initial_delimeter,
                                       curr_outer_final_delimeter
                                           - curr_outer_initial_delimeter);
-                    std::cout << "num/bool/null/final: " << str_value << '\n';
                     cjparse_json_parser::cjparse_parse_value (str_value,
                                                               temp_value);
                     array.push_back (temp_value);
@@ -202,7 +198,6 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                         = str.substr (curr_outer_initial_delimeter,
                                       curr_outer_final_delimeter
                                           - curr_outer_initial_delimeter + 1);
-                    std::cout << "final obj/arr/str: " << str_value << '\n';
                     cjparse_json_parser::cjparse_parse_value (str_value,
                                                               temp_value);
                     array.push_back (temp_value);
@@ -250,7 +245,6 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                                                               '\"', '\"');
                     obj_name = str.substr (st_of_name + 1,
                                            en_of_name - st_of_name - 1);
-                    std::cout << "obj_name " << obj_name << '\n';
                     double_point_after_name
                         = str.find_first_of (':', en_of_name + 1);
                     if (str[double_point_after_name - 1] == '\\')
@@ -265,7 +259,6 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                     str_temp = str.substr (curr_outer_initial_delimeter,
                                            not_white_after_curr_outer_initial
                                                - curr_outer_initial_delimeter);
-                    std::cout << "str_temp_object " << str_temp << '\n';
                     int temp_state = check_what_is_the_value (str_temp);
                     if (temp_state == 1 || temp_state == 2 || temp_state == 3)
                         state = 1;
@@ -326,7 +319,6 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                         = str.substr (curr_outer_initial_delimeter,
                                       curr_outer_final_delimeter
                                           - curr_outer_initial_delimeter);
-                    std::cout << "num/bool/null/final: " << str_value << '\n';
                     cjparse_json_parser::cjparse_parse_value (str_value,
                                                               temp_value);
                     auto repeted = object.find (obj_name);
@@ -346,7 +338,6 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                         = str.substr (curr_outer_initial_delimeter,
                                       curr_outer_final_delimeter
                                           - curr_outer_initial_delimeter + 1);
-                    std::cout << "final obj/arr/str: " << str_value << '\n';
                     cjparse_json_parser::cjparse_parse_value (str_value,
                                                               temp_value);
                     auto repeted = object.find (obj_name);
@@ -372,32 +363,26 @@ cjparse_json_parser::cjparse_parse_value (std::string &str,
     int what_is_the_value = check_what_is_the_value (str);
     if (what_is_the_value == 1)
         {
-            std::cout << "INPUT IS AN OBJECT" << '\n';
             cjparse_json_parser::cjparse_parse_object (str, value);
         }
     if (what_is_the_value == 2)
         {
-            std::cout << "INPUT IS A ARRAY" << '\n';
             cjparse_json_parser::cjparse_parse_array (str, value);
         }
     if (what_is_the_value == 3)
         {
-            std::cout << "INPUT IS A STRING" << '\n';
             value = cjparse_json_parser::cjparse_parse_value_string (str);
         }
     if (what_is_the_value == 4)
         {
-            std::cout << "INPUT IS A NUMBER" << '\n';
             value = cjparse_json_parser::cjparse_parse_value_number (str);
         }
     if (what_is_the_value == 5)
         {
-            std::cout << "INPUT IS A BOOL" << '\n';
             value = cjparse_json_parser::cjparse_parse_value_bool (str);
         }
     if (what_is_the_value == 6)
         {
-            std::cout << "INPUT IS A NULL" << '\n';
             cjparse_json_parser::cjparse_parse_value_null (str);
         }
 }

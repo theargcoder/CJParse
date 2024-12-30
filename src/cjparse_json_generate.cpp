@@ -38,7 +38,6 @@ cjparse_json_generator::cjparse_json_generator (cjparse::json_value &JSON,
         }
     else if (std::holds_alternative<cjparse::json_null> (JSON))
         {
-            std::cout << "we are empty asf bro" << '\n';
             new_value = cjparse::cjparse_json_value (
                 std::get<cjparse::json_null> (JSON));
         }
