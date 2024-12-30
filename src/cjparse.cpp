@@ -1,4 +1,5 @@
 #include "cjparse.h"
+#include "cjparse_json_generate.h"
 #include "cjparse_json_parser.cpp"
 
 cjparse::cjparse (std::string &str) { cjparse_json_parser (str, JSON); }
@@ -14,10 +15,7 @@ cjparse::return_the_value (std::string &name_to_return_value)
     json_value value;
     std::optional<json_value> when_valid_return
         = return_the_value_internal (name_to_return_value);
-    if (when_valid_return.has_value ())
-        return when_valid_return;
-    else
-        return value;
+    return when_valid_return.value_or (value);
 }
 
 cjparse::json_value
@@ -26,10 +24,7 @@ cjparse::return_the_value_in_tree (std::string &name_to_return_value)
     json_value value;
     std::optional<json_value> when_valid_return
         = return_the_value_in_tree_internal (name_to_return_value);
-    if (when_valid_return.has_value ())
-        return when_valid_return;
-    else
-        return value;
+    return when_valid_return.value_or (value);
 }
 
 template <class T>
@@ -39,10 +34,7 @@ cjparse::check_if_type (std::string &name_to_check_if_type)
     bool bool_to_return;
     std::optional<bool> when_valid_return
         = check_if_type_internal<T> (name_to_check_if_type);
-    if (when_valid_return.has_value ())
-        return when_valid_return.value ();
-    else
-        return false;
+    return when_valid_return.value_or (bool_to_return);
 }
 
 template <class T>
@@ -52,10 +44,7 @@ cjparse::check_if_type_in_tree (std::string &name_to_check_if_type)
     bool bool_to_return;
     std::optional<bool> when_valid_return
         = check_if_type_in_tree_internal<T> (name_to_check_if_type);
-    if (when_valid_return.has_value ())
-        return when_valid_return.value ();
-    else
-        return false;
+    return when_valid_return.value_or (bool_to_return);
 }
 
 template <class T>
@@ -67,29 +56,57 @@ cjparse::check_if_type_inside_object (std::string &name_of_object_container,
     std::optional<bool> when_valid_return
         = check_if_type_inside_object_internal<T> (name_of_object_container,
                                                    name_to_check_if_type);
-    if (when_valid_return.has_value ())
-        return when_valid_return.value ();
-    else
-        return false;
+    return when_valid_return.value_or (bool_to_return);
 }
 
 std::optional<cjparse::json_value>
 cjparse::return_the_value_internal (std::string &name)
 {
-    if (!std::holds_alternative<json_object> (JSON.value))
+    json_value value_in;
+
+    std::visit ([&value_in] (auto &json_val) { value_in = json_val; },
+                JSON.value);
+
+    if (std::holds_alternative<json_object> (value_in))
         {
-            return std::nullopt;
-            throw std::runtime_error ("JSON is not an object.");
+            auto &json_obj = std::get<json_object> (value_in);
+            auto it = json_obj.begin ();
+
+            while (it != json_obj.end ())
+                {
+                    if (it->first == name)
+                        {
+                            cjparse_json_generator generat
+                                = cjparse_json_generator (it->second.value,
+                                                          true);
+                            std::cout << generat.JSON_string << '\n';
+                            return it->second.value;
+                        }
+                    it++;
+                }
         }
-
-    const auto &json_obj = std::get<json_object> (JSON.value);
-    auto it = json_obj.find (name);
-
-    if (it != json_obj.end ())
+    if (std::holds_alternative<json_array> (value_in))
         {
-            return it->second.value;
-        }
+            auto &json_arr = std::get<json_array> (value_in);
+            auto it = json_arr.begin ();
 
+            while (it != json_arr.end ())
+                {
+                    if (std::holds_alternative<json_object> (it->value))
+                        {
+                            auto &json_obj = std::get<json_object> (it->value);
+                            auto it_2 = json_obj.begin ();
+
+                            while (it_2 != json_obj.end ())
+                                {
+                                    if (it_2->first == name)
+                                        return it_2->second.value;
+                                    it_2++;
+                                }
+                        }
+                    it++;
+                }
+        }
     // if key is not found we retun nullopt
     return std::nullopt;
     // throw std::runtime_error ("Key not found: " + name);
@@ -100,7 +117,6 @@ cjparse::return_the_value_in_tree_helper (
     std::optional<json_value> &value_to_alter, std::string &name,
     json_value &value_in)
 {
-    std::cout << "We are here..." << '\n';
     if (std::holds_alternative<json_object> (value_in))
         {
             auto &json_obj = std::get<json_object> (value_in);

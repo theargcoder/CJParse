@@ -68,11 +68,12 @@ main ()
     std::cout << JSON_gen.JSON_string << "\n";
 
     // testing return_value
-    std::string obj_name = "Image2";
+    std::string obj_name = "Image";
     cjparse::json_value value_of_obj_name = parser.return_the_value (obj_name);
-    JSON_gen = cjparse_json_generator (value_of_obj_name, true);
+    cjparse_json_generator JSON_gen2
+        = cjparse_json_generator (value_of_obj_name, true);
     std::cout << "here it comes return the value : " << '\n'
-              << JSON_gen.JSON_string << '\n';
+              << JSON_gen2.JSON_string << '\n';
 
     // testing check_if_type
     obj_name = "Image";
