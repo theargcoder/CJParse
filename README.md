@@ -87,8 +87,8 @@
 
 ## **Important Notes**
 
-- **API** *not finished*:
-  - unceritain of the expected behaviors of `return_the_value` and `return_the_value_in_tree` will need to do more testing.
+- **API** *(as of Dec 29th, 2024)*:
+  - all funtions have been tested and work in the manner explained in the documentation.
 - **Limitations** *(as of Dec 26th, 2024)*:
   - There are no known limitations as of the above listed date.
 - **Error Handling** *(planned)*:
