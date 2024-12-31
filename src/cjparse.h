@@ -77,7 +77,7 @@ class cjparse
      */
     json_value
     return_the_value_inside_object (std::string &name_of_object_container,
-                                    std::string &name_to_return_value);
+                                    std::string &name_to_check_if_type);
     /*
      * returns the value of the object with inputted name
      * of type "cjparse::json_value" in the first layer of json
@@ -117,6 +117,10 @@ class cjparse
 
     std::optional<json_value>
     return_the_value_in_tree_internal (std::string &name_to_return_value);
+
+    std::optional<json_value> return_the_value_inside_object_internal (
+        std::string &name_of_object_container,
+        std::string &name_to_return_value);
 
     template <class T>
     std::optional<bool>

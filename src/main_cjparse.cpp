@@ -84,6 +84,17 @@ main ()
               << " with value stored in memory: " << '\n'
               << JSON_gen.JSON_string << '\n';
 
+    // testing return_the_value_inside_object
+    std::string object_container = "Thumbnail";
+    obj_name = "Width";
+    cjparse::json_value value_in_obj
+        = parser.return_the_value_inside_object (object_container, obj_name);
+    JSON_gen = cjparse_json_generator (value_in_obj, true);
+    std::cout << "we obtained the value of object named: " << obj_name
+              << " inside of container named: " << object_container
+              << " with value stored in memory: " << '\n'
+              << JSON_gen.JSON_string << '\n';
+
     // testing check_if_type
     obj_name = "Image";
     std::optional<bool> will_be_null
@@ -123,7 +134,7 @@ main ()
                       << " was not found in the tree" << '\n';
         }
     // testing check_if_type_inside_object
-    std::string object_container = "Image";
+    object_container = "Image";
     obj_name = "Animated";
     std::optional<bool> shouldnt_be_null_2
         = parser.check_if_type_inside_object<bool> (object_container,
