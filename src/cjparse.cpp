@@ -27,6 +27,17 @@ cjparse::return_the_value_in_tree (std::string &name_to_return_value)
     return when_valid_return.value_or (value);
 }
 
+cjparse::json_value
+cjparse::return_the_value_inside_object (std::string &name_of_object_container,
+                                         std::string &name_to_check_if_type)
+{
+    json_value value;
+    std::optional<json_value> when_valid_return
+        = return_the_value_inside_object_internal (name_of_object_container,
+                                                   name_to_check_if_type);
+    return when_valid_return.value_or (value);
+}
+
 template <class T>
 bool
 cjparse::check_if_type (std::string &name_to_check_if_type)
@@ -171,6 +182,26 @@ cjparse::return_the_value_in_tree_internal (std::string &name_to_return_value)
 
     return_the_value_in_tree_helper (value_to_return, name_to_return_value,
                                      value);
+
+    return value_to_return;
+}
+
+std::optional<cjparse::json_value>
+cjparse::return_the_value_inside_object_internal (
+    std::string &name_of_object_container, std::string &name_to_return_value)
+{
+    std::optional<json_value> value_to_return;
+    std::optional<json_value> value_of_the_container;
+
+    json_value value;
+
+    std::visit ([&value] (auto &value_in) { value = value_in; }, JSON.value);
+
+    return_the_value_in_tree_helper (value_of_the_container,
+                                     name_of_object_container, value);
+
+    return_the_value_in_tree_helper (value_to_return, name_to_return_value,
+                                     value_of_the_container.value ());
 
     return value_to_return;
 }
