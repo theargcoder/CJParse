@@ -33,8 +33,8 @@ std::string
 cjparse_json_parser::cjparse_parse_value_string (std::string &str)
 {
     std::size_t st_of_string = str.find ('\"', 0);
-    std::size_t en_of_string = str.find ('\"', st_of_string + 1);
-    check_if_prev_is_backlash (str, en_of_string, '\"');
+    std::size_t en_of_string
+        = return_the_matching_pattern (str, 0, '\"', '\"');
 
     return str.substr (st_of_string + 1, en_of_string - st_of_string - 1);
 }
@@ -384,21 +384,6 @@ cjparse_json_parser::cjparse_parse_value (std::string &str,
     if (what_is_the_value == 6)
         {
             cjparse_json_parser::cjparse_parse_value_null (str);
-        }
-}
-
-void
-cjparse_json_parser::check_if_prev_is_backlash (std::string &str,
-                                                std::size_t &position,
-                                                char pattern)
-{
-    while (position > 0 && str[position - 1] == '\\')
-        {
-            position = str.find (pattern, position + 1);
-            if (position == std::string::npos)
-                {
-                    break; // Avoid infinite loop if no pattern found.
-                }
         }
 }
 

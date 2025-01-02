@@ -70,6 +70,21 @@ cjparse::check_if_type_inside_object (std::string &name_of_object_container,
     return when_valid_return.value_or (bool_to_return);
 }
 
+template <class T, typename... type>
+bool cjparse::check_if_type_nested (type &...string_nested_input_names) {
+    // unsure as of 01-01-2024 how to implement this properly
+    /*
+    json_value outside_container;
+    bool we_good = false;
+
+    (check_if_type_nested_helper<T> (string_nested_input_names,
+                                     outside_container),
+     ...);
+
+    return std::holds_alternative<T> (outside_container);
+    */
+};
+
 std::optional<cjparse::json_value>
 cjparse::return_the_value_internal (std::string &name)
 {
