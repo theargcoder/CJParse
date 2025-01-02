@@ -33,9 +33,6 @@ class cjparse_json_parser
   private:
     int check_what_is_the_value (std::string &str);
 
-    void check_if_prev_is_backlash (std::string &str, std::size_t &position,
-                                    char pattern);
-
     std::size_t
     return_the_matching_pattern (std::string &str,
                                  std::size_t pos_of_bracket_to_match,

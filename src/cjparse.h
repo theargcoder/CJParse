@@ -110,6 +110,11 @@ class cjparse
     template <class T>
     bool check_if_type_inside_object (std::string &name_of_object_container,
                                       std::string &name_to_check_if_type);
+    /*
+
+     */
+    template <class T, typename... type>
+    bool check_if_type_nested (type &...types);
 
   private:
     std::optional<json_value>
@@ -142,6 +147,11 @@ class cjparse
     template <class T>
     void check_if_type_in_tree_helper (std::optional<bool> &bool_to_alter,
                                        std::string &name, json_value &value);
+
+    template <class T>
+    void check_if_type_nested_helper (std::string &name_to_check_if_type,
+                                      json_value &outside_container,
+                                      bool &we_good);
 
   private:
 };
