@@ -113,8 +113,9 @@ class cjparse
     /*
 
      */
-    template <class T, typename... type>
-    bool check_if_type_nested (type &...types);
+    template <class T, typename first, typename... type>
+    bool check_if_type_nested (first initial_string_nested_input_names,
+                               type &...string_nested_input_names);
 
   private:
     std::optional<json_value>

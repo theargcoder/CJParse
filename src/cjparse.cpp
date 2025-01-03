@@ -70,19 +70,34 @@ cjparse::check_if_type_inside_object (std::string &name_of_object_container,
     return when_valid_return.value_or (bool_to_return);
 }
 
-template <class T, typename... type>
-bool cjparse::check_if_type_nested (type &...string_nested_input_names) {
-    // unsure as of 01-01-2024 how to implement this properly
-    /*
-    json_value outside_container;
-    bool we_good = false;
+template <class T, typename first, typename... type>
+bool
+cjparse::check_if_type_nested (first initial_string_nested_input_names,
+                               type &...string_nested_input_names)
+{
+    json_value full_value;
 
-    (check_if_type_nested_helper<T> (string_nested_input_names,
-                                     outside_container),
-     ...);
+    std::visit ([&full_value] (auto &value_in) { full_value = value_in; },
+                JSON.value);
 
-    return std::holds_alternative<T> (outside_container);
-    */
+    bool we_are_array = std::holds_alternative<json_object> (full_value);
+    bool we_are_object = std::holds_alternative<json_array> (full_value);
+    if (we_are_array || we_are_object)
+        return false; // false  JSON not a container (aka ARRAY or OBJECT)
+
+    if (we_are_object)
+        {
+            auto &json_obj = std::get<json_object> (full_value);
+            bool found_first_name
+                = json_obj.find (initial_string_nested_input_names);
+            if (found_first_name)
+                check_if_type_nested_helper<T> (string_nested_input_names...);
+            else
+                return found_first_name;
+        }
+    if (we_are_array)
+        {
+        }
 };
 
 std::optional<cjparse::json_value>
@@ -102,9 +117,6 @@ cjparse::return_the_value_internal (std::string &name)
                 {
                     if (it->first == name)
                         {
-                            cjparse_json_generator generat
-                                = cjparse_json_generator (it->second.value,
-                                                          true);
                             return it->second.value;
                         }
                     it++;
