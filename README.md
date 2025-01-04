@@ -1,24 +1,89 @@
-# **CJParse**
+About
+-------
 
-**CJParse** is a lightweight and portable C++ library for parsing and generating JSON, adhering to the [JSON Standard (*RFC 7159*)](https://www.rfc-editor.org/rfc/rfc7159).  
 
----
+**CJParse** is a lightweight and efficient C++ library for parsing and generating JSON, adhering to the [JSON Standard (RFC 8259)](https://www.rfc-editor.org/rfc/rfc8259). Designed with performance in mind, it simplifies working with JSON data in C++ applications.
 
-## **Features**
 
-### **Parsing JSON**
-- Converts any JSON string into a `CJParse` struct, containing all the contents of the JSON string.
-- **Compact and portable**: The only dependency is the C++ Standard Library.
-- **Internal Classes**:
-  - A dedicated parser for handling JSON strings.
-  - A generator for creating JSON strings with customization options.
+Features
+--------
   
-### **Future Enhancements**
-- Error handling: Trace parsing errors down to the exact line and character (**planned**).
+  - JSON Parsing
+  - JSON Generation
+  - Lightweight
+  - Portable
+  - Standard Library is the only dependency
 
 
-#### Read the wiki for more insight on how the library works and its design
+Getting Started
+----------------
 
-[Wiki](https://github.com/theargcoder/CJParse/wiki)
+To download do:
+```bash
+git clone https://github.com/theargcoder/CJParse
+```
+You can straight up include like so:
+```cpp
+#include "cjparse.cpp"
+```
+> if you prefer you may create a static library
+```bash
+g++ -c cjparse.cpp -o cjparse.o
+ar rcs libcjparse.a cjparse.o
+```
+> or a dynamic one
+```bash
+g++ -shared -fPIC cjparse.cpp -o libcjparse.so
+```
+> and link in the following fashion
+```bash
+g++ main.cpp -L. -lcjparse -o main_executable
+```
+More details can be found in the [getting started](https://github.com/theargcoder/CJParse/wiki/Getting-Started) page of the wiki.
 
-DISCLAIMER the wiki is not finished yet!!!!
+
+Prerequisites
+-------------
+
+Ensure you have a C++ compiler that supports C++11 or later.
+
+
+Wiki
+----
+
+Design details, behavior of functions, and examples all can be found in the [wiki](https://github.com/theargcoder/CJParse/wiki)
+
+
+Usage
+-----
+
+Here’s a simple example demonstrating how to parse a JSON string using CJParse:
+```cpp
+// Create an instance of the cjparse class, initializing it with a JSON-compliant string.
+cjparse parser(json_2);
+
+// Generate a JSON string representation using the cjparse_json_generator.
+// The second argument (true) enables pretty-printing for better readability.
+cjparse_json_generator JSON_gen(parser.JSON, true);
+
+// Output the formatted JSON string to the console.
+std::cout << "Parsed JSON: \n" << JSON_gen.JSON_string << "\n"
+```
+For more detailed examples and usage guidelines, refer to the [wiki](https://github.com/theargcoder/CJParse/wiki)
+
+
+Future Enhancements
+-------------------
+
+- error handling: Implementation of detailed error tracing to identify parssing errors down to exact line and character.
+
+
+Contributions
+-------------
+
+Pull or commit to new_features branch or create a new branch!!!!
+
+
+License
+-------
+This project is licensed under the [GPL-3.0 License](https://github.com/theargcoder/CJParse/blob/main/LICENSE)
