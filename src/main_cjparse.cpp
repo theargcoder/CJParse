@@ -67,8 +67,15 @@ main ()
         = cjparse_json_generator (parser.JSON, true);
     std::cout << JSON_gen.JSON_string << "\n";
 
-    // testing return_the_value_
-    cjparse::json_value value_to_return
+    // testing return_the_value 1 input
+    cjparse::json_value value_to_return = parser.return_the_value ("Image");
+    JSON_gen = cjparse_json_generator (value_to_return, true);
+    std::cout << "testing return the value in Image"
+              << "\n"
+              << JSON_gen.JSON_string << '\n';
+
+    // testing return_the_value multiple inputs
+    value_to_return
         = parser.return_the_value ({ "Image2", "Thumbnail", "Width" });
     JSON_gen = cjparse_json_generator (value_to_return, true);
     std::cout << "testing return the value in { \"Image2\", \"Thumbnail\", "
@@ -76,9 +83,23 @@ main ()
               << "\n"
               << JSON_gen.JSON_string << '\n';
 
-    // testing check_if_type
+    // testing check_if_type single name
     // checkiong if Width has a value of type "json_number"
-    bool checking_if_number = parser.check_if_type<cjparse::json_number> (
+    bool checking_if_number
+        = parser.check_if_type<cjparse::json_object> ("Image");
+    if (checking_if_number == true)
+        {
+            std::cout << "object named: " << "Image"
+                      << "  has value type T (tempate)" << '\n';
+        }
+    else
+        {
+            std::cout << "object named: " << "Image"
+                      << " has value type NOT T (template)" << '\n';
+        }
+    // testing check_if_type multiple names
+    // checkiong if Width has a value of type "json_number"
+    checking_if_number = parser.check_if_type<cjparse::json_number> (
         { "Image2", "Thumbnail", "Width" });
     if (checking_if_number == true)
         {

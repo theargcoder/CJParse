@@ -70,8 +70,12 @@ class cjparse
 
     template <typename json_type> json_type return_json_container ();
 
+    json_value return_the_value (std::string object_name);
+
     json_value
     return_the_value (std::vector<std::string> object_name_vector_in);
+
+    template <class T> bool check_if_type (std::string object_name);
 
     template <class T>
     bool check_if_type (std::vector<std::string> object_name_vector_in);

@@ -54,6 +54,19 @@ cjparse::return_json_container ()
 }
 
 cjparse::json_value
+cjparse::return_the_value (std::string object_name)
+{
+    bool return_empty
+        = false; // just exists to reuse internal function no other purpose
+    json_value full_json, value_to_return;
+    std::visit ([&full_json] (auto value) { full_json = value; }, JSON.value);
+
+    return_the_value_internal (object_name, full_json, value_to_return,
+                               return_empty);
+    return value_to_return;
+}
+
+cjparse::json_value
 cjparse::return_the_value (std::vector<std::string> object_name_vector_in)
 {
     bool return_empty = false;
@@ -112,6 +125,22 @@ cjparse::return_the_value_internal (std::string object_name,
         }
 
     value_to_return = temp_value;
+}
+
+template <class T>
+bool
+cjparse::check_if_type (std::string object_name)
+{
+    bool bool_to_return = false; // here so we can reuse internal method
+    json_value full_json;
+    std::visit ([&full_json] (auto value) { full_json = value; }, JSON.value);
+
+    json_value temp_value = full_json;
+
+    check_if_type_internal<T> (object_name, temp_value, temp_value,
+                               bool_to_return);
+
+    return bool_to_return;
 }
 
 template <class T>
