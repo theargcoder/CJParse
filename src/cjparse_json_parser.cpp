@@ -29,7 +29,7 @@ cjparse_json_parser::check_what_is_the_value (std::string &str)
         return 0; // bad JSON
 };
 
-std::string
+cjparse::json_string
 cjparse_json_parser::cjparse_parse_value_string (std::string &str)
 {
     std::size_t st_of_string = str.find ('\"', 0);
@@ -39,7 +39,7 @@ cjparse_json_parser::cjparse_parse_value_string (std::string &str)
     return str.substr (st_of_string + 1, en_of_string - st_of_string - 1);
 }
 
-std::variant<int, long int, long long int, double, long double>
+cjparse::json_number
 cjparse_json_parser::cjparse_parse_value_number (std::string &str)
 {
     std::string str_number_only;
@@ -78,7 +78,7 @@ cjparse_json_parser::cjparse_parse_value_bool (std::string &str)
         return false;
 }
 
-std::any
+cjparse::json_null
 cjparse_json_parser::cjparse_parse_value_null (std::string &str)
 {
     return std::any ();
