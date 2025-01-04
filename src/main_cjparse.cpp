@@ -67,93 +67,28 @@ main ()
         = cjparse_json_generator (parser.JSON, true);
     std::cout << JSON_gen.JSON_string << "\n";
 
-    // testing return_value
-    std::string obj_name = "Image";
-    cjparse::json_value value_of_obj_name = parser.return_the_value (obj_name);
-    JSON_gen = cjparse_json_generator (value_of_obj_name, true);
-    std::cout << "we obtained the value of object named: " << obj_name
-              << " with value stored in memory: " << '\n'
-              << JSON_gen.JSON_string << '\n';
-
-    // testing return_value_in_tree
-    obj_name = "Title";
-    cjparse::json_value value_in_tree
-        = parser.return_the_value_in_tree (obj_name);
-    JSON_gen = cjparse_json_generator (value_in_tree, true);
-    std::cout << "we obtained the value of object named: " << obj_name
-              << " with value stored in memory: " << '\n'
-              << JSON_gen.JSON_string << '\n';
-
-    // testing return_the_value_inside_object
-    std::string object_container = "Thumbnail";
-    obj_name = "Width";
-    cjparse::json_value value_in_obj
-        = parser.return_the_value_inside_object (object_container, obj_name);
-    JSON_gen = cjparse_json_generator (value_in_obj, true);
-    std::cout << "we obtained the value of object named: " << obj_name
-              << " inside of container named: " << object_container
-              << " with value stored in memory: " << '\n'
+    // testing return_the_value_
+    cjparse::json_value value_to_return
+        = parser.return_the_value ({ "Image2", "Thumbnail", "Width" });
+    JSON_gen = cjparse_json_generator (value_to_return, true);
+    std::cout << "testing return the value in { \"Image2\", \"Thumbnail\", "
+                 "\"Width\" }"
+              << "\n"
               << JSON_gen.JSON_string << '\n';
 
     // testing check_if_type
-    obj_name = "Image";
-    std::optional<bool> will_be_null
-        = parser.check_if_type<cjparse::json_object> (
-            obj_name); // will return nullopt
-    if (will_be_null != std::nullopt)
+    // checkiong if Width has a value of type "json_number"
+    bool checking_if_number = parser.check_if_type<cjparse::json_number> (
+        { "Image2", "Thumbnail", "Width" });
+    if (checking_if_number == true)
         {
-            if (will_be_null == true)
-                std::cout << "object named: " << obj_name
-                          << "  has value type T (tempate)" << '\n';
-            else
-                std::cout << "object named: " << obj_name
-                          << " has value type NOT T (template)" << '\n';
+            std::cout << "object named: " << "Width"
+                      << "  has value type T (tempate)" << '\n';
         }
     else
         {
-            std::cout << "object named: " << obj_name << " was not found "
-                      << '\n';
-        }
-
-    // testing check_if_type_in_tree
-    obj_name = "Thumbnail";
-    std::optional<bool> shouldnt_be_null
-        = parser.check_if_type_in_tree<cjparse::json_string> (obj_name);
-    if (shouldnt_be_null != std::nullopt)
-        {
-            if (shouldnt_be_null == true)
-                std::cout << "object named: " << obj_name
-                          << "  has value type T (tempate)" << '\n';
-            else
-                std::cout << "object named: " << obj_name
-                          << " has value type NOT T (template)" << '\n';
-        }
-    else
-        {
-            std::cout << "object named: " << obj_name
-                      << " was not found in the tree" << '\n';
-        }
-    // testing check_if_type_inside_object
-    object_container = "Image";
-    obj_name = "Animated";
-    std::optional<bool> shouldnt_be_null_2
-        = parser.check_if_type_inside_object<bool> (object_container,
-                                                    obj_name);
-    if (shouldnt_be_null_2 != std::nullopt)
-        {
-            if (shouldnt_be_null_2 == true)
-                std::cout << "object named: " << obj_name << '\n'
-                          << "inside of object named: " << object_container
-                          << "  has value type T (tempate)" << '\n';
-            else
-                std::cout << "object named: " << obj_name << '\n'
-                          << "inside of object named: " << object_container
-                          << "  has value type T (tempate)" << '\n';
-        }
-    else
-        {
-            std::cout << "object named: " << obj_name
-                      << " was not found in the tree" << '\n';
+            std::cout << "object named: " << "Width"
+                      << " has value type NOT T (template)" << '\n';
         }
 
     return 0;

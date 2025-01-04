@@ -21,14 +21,13 @@ class cjparse_json_parser
                                cjparse::cjparse_json_value &value);
 
     // assign value by returning it
-    std::string cjparse_parse_value_string (std::string &str);
+    cjparse::json_string cjparse_parse_value_string (std::string &str);
 
-    std::variant<int, long int, long long int, double, long double>
-    cjparse_parse_value_number (std::string &str);
+    cjparse::json_number cjparse_parse_value_number (std::string &str);
 
     bool cjparse_parse_value_bool (std::string &str);
 
-    std::any cjparse_parse_value_null (std::string &str);
+    cjparse::json_null cjparse_parse_value_null (std::string &str);
 
   private:
     int check_what_is_the_value (std::string &str);
