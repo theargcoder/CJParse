@@ -1,5 +1,5 @@
-#include "cjparse.cpp"
-#include "cjparse_json_generate.cpp"
+#include "src/cjparse.cpp"
+#include "src/cjparse_json_generate.cpp"
 #include <string>
 
 std::string json_2 = R"({
