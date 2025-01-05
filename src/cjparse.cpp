@@ -15,7 +15,7 @@ cjparse::return_full_json ()
 
     std::visit ([&value_to_return] (auto value) { value_to_return = value; },
                 JSON.value);
-    return value_to_return;
+    return std::move (value_to_return);
 }
 
 bool
@@ -50,7 +50,7 @@ cjparse::return_json_container ()
 {
     json_type type_to_return;
     type_to_return = std::get<json_type> (return_full_json ());
-    return type_to_return;
+    return std::move (type_to_return);
 }
 
 cjparse::json_value
@@ -63,7 +63,7 @@ cjparse::return_the_value (std::string object_name)
 
     return_the_value_internal (object_name, full_json, value_to_return,
                                return_empty);
-    return value_to_return;
+    return std::move (value_to_return);
 }
 
 cjparse::json_value
@@ -73,20 +73,18 @@ cjparse::return_the_value (std::vector<std::string> object_name_vector_in)
     json_value full_json, value_to_return;
     std::visit ([&full_json] (auto value) { full_json = value; }, JSON.value);
 
-    json_value temp_value = full_json;
-
     auto it = object_name_vector_in.begin ();
 
     while (it != object_name_vector_in.end ())
         {
-            return_the_value_internal (*it, temp_value, temp_value,
+            return_the_value_internal (*it, full_json, full_json,
                                        return_empty);
             it++;
         }
     if (!return_empty)
-        value_to_return = temp_value;
+        value_to_return = std::move (full_json);
 
-    return value_to_return;
+    return std::move (value_to_return);
 }
 
 void
@@ -103,7 +101,7 @@ cjparse::return_the_value_internal (std::string object_name,
             auto iter = value_object.find (object_name);
             if (iter != value_object.end ())
                 {
-                    value_to_return = iter->second.value;
+                    value_to_return = std::move (iter->second.value);
                     return;
                 }
             else
@@ -124,7 +122,7 @@ cjparse::return_the_value_internal (std::string object_name,
                 }
         }
 
-    value_to_return = temp_value;
+    value_to_return = std::move (temp_value);
 }
 
 template <class T>
@@ -135,9 +133,7 @@ cjparse::check_if_type (std::string object_name)
     json_value full_json;
     std::visit ([&full_json] (auto value) { full_json = value; }, JSON.value);
 
-    json_value temp_value = full_json;
-
-    check_if_type_internal<T> (object_name, temp_value, temp_value,
+    check_if_type_internal<T> (object_name, full_json, full_json,
                                bool_to_return);
 
     return bool_to_return;
@@ -151,13 +147,11 @@ cjparse::check_if_type (std::vector<std::string> object_name_vector_in)
     json_value full_json, value_to_return;
     std::visit ([&full_json] (auto value) { full_json = value; }, JSON.value);
 
-    json_value temp_value = full_json;
-
     auto it = object_name_vector_in.begin ();
 
     while (it != object_name_vector_in.end ())
         {
-            check_if_type_internal<T> (*it, temp_value, temp_value,
+            check_if_type_internal<T> (*it, full_json, full_json,
                                        bool_to_return);
             it++;
         }
@@ -181,8 +175,8 @@ cjparse::check_if_type_internal (std::string name_to_check_if_type,
             auto iter = value_object.find (name_to_check_if_type);
             if (iter != value_object.end ())
                 {
-                    value_to_alter = iter->second.value;
-                    if (std::holds_alternative<T> (first_value))
+                    value_to_alter = std::move (iter->second.value);
+                    if (std::holds_alternative<T> (value_to_alter))
                         bool_to_return = true;
                     else
                         bool_to_return = false;

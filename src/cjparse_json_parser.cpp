@@ -121,9 +121,10 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                             curr_outer_initial_delimeter);
                     not_white_after_curr_outer_initial = str.find_first_of (
                         { ',', '}', ']' }, curr_outer_initial_delimeter + 1);
-                    str_temp = str.substr (curr_outer_initial_delimeter,
-                                           not_white_after_curr_outer_initial
-                                               - curr_outer_initial_delimeter);
+                    str_temp = std::move (
+                        str.substr (curr_outer_initial_delimeter,
+                                    not_white_after_curr_outer_initial
+                                        - curr_outer_initial_delimeter));
                     int temp_state = check_what_is_the_value (str_temp);
                     if (temp_state == 1 || temp_state == 2 || temp_state == 3)
                         state = 1;
@@ -180,13 +181,13 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                 }
             if (state == 7)
                 {
-                    std::string str_value
-                        = str.substr (curr_outer_initial_delimeter,
-                                      curr_outer_final_delimeter
-                                          - curr_outer_initial_delimeter);
+                    std::string str_value = std::move (
+                        str.substr (curr_outer_initial_delimeter,
+                                    curr_outer_final_delimeter
+                                        - curr_outer_initial_delimeter));
                     cjparse_json_parser::cjparse_parse_value (str_value,
                                                               temp_value);
-                    array.push_back (temp_value);
+                    array.push_back (std::move (temp_value));
                     if (nested)
                         state = 0;
                     else
@@ -194,13 +195,13 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                 }
             if (state == 8)
                 {
-                    std::string str_value
-                        = str.substr (curr_outer_initial_delimeter,
-                                      curr_outer_final_delimeter
-                                          - curr_outer_initial_delimeter + 1);
+                    std::string str_value = std::move (
+                        str.substr (curr_outer_initial_delimeter,
+                                    curr_outer_final_delimeter
+                                        - curr_outer_initial_delimeter + 1));
                     cjparse_json_parser::cjparse_parse_value (str_value,
                                                               temp_value);
-                    array.push_back (temp_value);
+                    array.push_back (std::move (temp_value));
                     if (nested)
                         state = 0;
                     else
@@ -243,8 +244,8 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                         '\"', curr_outer_final_delimeter + 1);
                     en_of_name = return_the_matching_pattern (str, st_of_name,
                                                               '\"', '\"');
-                    obj_name = str.substr (st_of_name + 1,
-                                           en_of_name - st_of_name - 1);
+                    obj_name = std::move (str.substr (
+                        st_of_name + 1, en_of_name - st_of_name - 1));
                     double_point_after_name
                         = str.find_first_of (':', en_of_name + 1);
                     if (str[double_point_after_name - 1] == '\\')
@@ -256,9 +257,10 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                                                  double_point_after_name + 1);
                     not_white_after_curr_outer_initial = str.find_first_of (
                         { ',', '}', ']' }, curr_outer_initial_delimeter);
-                    str_temp = str.substr (curr_outer_initial_delimeter,
-                                           not_white_after_curr_outer_initial
-                                               - curr_outer_initial_delimeter);
+                    str_temp = std::move (
+                        str.substr (curr_outer_initial_delimeter,
+                                    not_white_after_curr_outer_initial
+                                        - curr_outer_initial_delimeter));
                     int temp_state = check_what_is_the_value (str_temp);
                     if (temp_state == 1 || temp_state == 2 || temp_state == 3)
                         state = 1;
@@ -315,10 +317,10 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                 }
             if (state == 7)
                 {
-                    std::string str_value
-                        = str.substr (curr_outer_initial_delimeter,
-                                      curr_outer_final_delimeter
-                                          - curr_outer_initial_delimeter);
+                    std::string str_value = std::move (
+                        str.substr (curr_outer_initial_delimeter,
+                                    curr_outer_final_delimeter
+                                        - curr_outer_initial_delimeter));
                     cjparse_json_parser::cjparse_parse_value (str_value,
                                                               temp_value);
                     auto repeted = object.find (obj_name);
@@ -334,18 +336,22 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                 }
             if (state == 8)
                 {
-                    std::string str_value
-                        = str.substr (curr_outer_initial_delimeter,
-                                      curr_outer_final_delimeter
-                                          - curr_outer_initial_delimeter + 1);
+                    std::string str_value = std::move (
+                        str.substr (curr_outer_initial_delimeter,
+                                    curr_outer_final_delimeter
+                                        - curr_outer_initial_delimeter + 1));
                     cjparse_json_parser::cjparse_parse_value (str_value,
                                                               temp_value);
                     auto repeted = object.find (obj_name);
                     bool name_already_exists = repeted != object.end ();
                     if (name_already_exists)
-                        obj_name = obj_name + std::to_string (rand () % 1000);
+                        obj_name = obj_name
+                                   + std::to_string (
+                                       rand ()
+                                       % 1000); // will have to change this to
+                                                // make it predictable.....
 
-                    object[obj_name] = temp_value;
+                    object[obj_name] = std::move (temp_value);
                     if (nested)
                         state = 0;
                     else
