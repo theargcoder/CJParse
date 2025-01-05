@@ -111,13 +111,13 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
             if (state == 0)
                 {
                     curr_outer_initial_delimeter = str.find_first_not_of (
-                        { str[curr_outer_final_delimeter], 0x20, 0x0c, 0x0a,
-                          0x0d, 0x09, 0x0b },
+                        { str[curr_outer_final_delimeter], 0x20, 0x0a, 0x0d,
+                          0x09 },
                         curr_outer_final_delimeter);
                     if (str[curr_outer_initial_delimeter] == ',')
                         curr_outer_initial_delimeter = str.find_first_not_of (
-                            { str[curr_outer_initial_delimeter], 0x20, 0x0c,
-                              0x0a, 0x0d, 0x09, 0x0b },
+                            { str[curr_outer_initial_delimeter], 0x20, 0x0a,
+                              0x0d, 0x09 },
                             curr_outer_initial_delimeter);
                     not_white_after_curr_outer_initial = str.find_first_of (
                         { ',', '}', ']' }, curr_outer_initial_delimeter + 1);
@@ -143,9 +143,9 @@ cjparse_json_parser::cjparse_parse_array (std::string &str,
                 {
                     curr_outer_final_delimeter
                         = not_white_after_curr_outer_initial;
-                    not_white_after_curr_outer_final = str.find_first_not_of (
-                        { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
-                        curr_outer_final_delimeter);
+                    not_white_after_curr_outer_final
+                        = str.find_first_not_of ({ 0x20, 0x0a, 0x0d, 0x09 },
+                                                 curr_outer_final_delimeter);
                     state = 3;
                 }
             if (state == 3)
@@ -251,9 +251,9 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                         {
                         } // HORRIBLE JSON
 
-                    curr_outer_initial_delimeter = str.find_first_not_of (
-                        { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
-                        double_point_after_name + 1);
+                    curr_outer_initial_delimeter
+                        = str.find_first_not_of ({ 0x20, 0x0a, 0x0d, 0x09 },
+                                                 double_point_after_name + 1);
                     not_white_after_curr_outer_initial = str.find_first_of (
                         { ',', '}', ']' }, curr_outer_initial_delimeter);
                     str_temp = str.substr (curr_outer_initial_delimeter,
@@ -278,9 +278,9 @@ cjparse_json_parser::cjparse_parse_object (std::string &str,
                 {
                     curr_outer_final_delimeter
                         = not_white_after_curr_outer_initial;
-                    not_white_after_curr_outer_final = str.find_first_not_of (
-                        { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
-                        curr_outer_final_delimeter);
+                    not_white_after_curr_outer_final
+                        = str.find_first_not_of ({ 0x20, 0x0a, 0x0d, 0x09 },
+                                                 curr_outer_final_delimeter);
                     state = 3;
                 }
             if (state == 3)
@@ -465,6 +465,5 @@ cjparse_json_parser::find_delimeters_check_if_comma_alter_state (
     final_delimeter = return_the_matching_pattern (str, initial_delimeter,
                                                    pattern, pattern_to_match);
     not_white_position_after_final_delimiter = str.find_first_not_of (
-        { pattern_to_match, 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b },
-        final_delimeter);
+        { pattern_to_match, 0x20, 0x0a, 0x0d, 0x09 }, final_delimeter);
 }

@@ -57,8 +57,7 @@ std::string json_1 = R"([
 int
 main ()
 {
-    // Create the parser with the given JSON string (assuming cjparse class has
-    // a constructor that takes a string)
+    // construct the cjparse class inputing a JSON obliging string in.
     cjparse parser (json_2);
 
     // Print the JSON structure
