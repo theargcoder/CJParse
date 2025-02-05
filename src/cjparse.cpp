@@ -1,5 +1,5 @@
-#include "cjparse.h"
-#include "cjparse_json_parser.cpp"
+#include "../include/cjparse.h"
+#include "../include/cjparse_json_parser.h"
 
 cjparse::cjparse (std::string &str) { cjparse_json_parser (str, JSON); }
 

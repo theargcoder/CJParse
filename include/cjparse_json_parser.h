@@ -44,6 +44,8 @@ class cjparse_json_parser
         std::string &str, std::size_t &initial_delimeter,
         std::size_t &final_delimeter,
         std::size_t &not_white_position_after_final_delimeter, char pattern);
+
+    std::string decode_unicode (const std::string &str);
 };
 
 #endif // CJPARSE_JSON_PARSER
