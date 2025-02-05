@@ -3,6 +3,17 @@
 
 cjparse::cjparse (std::string &str) { cjparse_json_parser (str, JSON); }
 
+cjparse::cjparse (std::string &str,
+                  std::string json_string_pattern_to_keep_raw)
+{
+    cjparse_json_parser (str, JSON, json_string_pattern_to_keep_raw);
+}
+
+cjparse::cjparse (std::string &str,
+                  std::vector<std::string> json_string_patterns_to_keep_raw)
+{
+    cjparse_json_parser (str, JSON, json_string_patterns_to_keep_raw);
+}
 cjparse::cjparse (std::stringstream &fake_str)
 {
     // to be determied

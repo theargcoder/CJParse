@@ -4,7 +4,7 @@
 #include <string>
 
 std::string json_3
-    = R"({"model":"deepseek-r1:14b","created_at":"2025-02-05T20:05:12.569859Z","response":"\u003cthink\u003e","done":false}
+    = R"({"model":"deepseek-r1:14b","created_at":"2025-02-05T20:05:12.569859Z","response":"\u003cthink\u003e \n the \n cool \n this will be raw \( \n pp ","done":false}
 )";
 std::string json_2 = R"({
         "Image": {
@@ -62,7 +62,7 @@ int
 main ()
 {
     std::cout << "we are here" << '\n';
-    cjparse parser (json_3);
+    cjparse parser (json_3, std::vector<std::string> ({ R"(\()", R"()\)" }));
     std::cout << "we are here 2" << '\n';
     cjparse::json_value val = parser.return_the_value ("response");
     std::cout << "we are here 3" << '\n';

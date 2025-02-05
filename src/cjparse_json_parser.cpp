@@ -6,6 +6,23 @@ cjparse_json_parser::cjparse_json_parser (
     cjparse_parse_value (str, JSON_container);
 }
 
+cjparse_json_parser::cjparse_json_parser (
+    std::string &str, cjparse::cjparse_json_value &JSON_container,
+    std::string json_string_pattern_to_keep_raw)
+{
+    inside_str_ignore.push_back (json_string_pattern_to_keep_raw);
+    cjparse_parse_value (str, JSON_container);
+}
+
+cjparse_json_parser::cjparse_json_parser (
+    std::string &str, cjparse::cjparse_json_value &JSON_container,
+    std::vector<std::string> json_string_pattern_to_keep_raw)
+{
+    inside_str_ignore = json_string_pattern_to_keep_raw;
+
+    cjparse_parse_value (str, JSON_container);
+}
+
 int
 cjparse_json_parser::check_what_is_the_value (std::string &str)
 {
@@ -37,164 +54,143 @@ cjparse_json_parser::decode_unicode (const std::string &raw_str)
 
     while (i < raw_str.size ())
         {
-            if (raw_str[i] == '\\')
+            // Check if the current substring matches any raw pattern
+            bool is_raw = false;
+            if (!inside_str_ignore
+                     .empty ()) // Only check if there are patterns
                 {
-                    // Check for common escape sequences first
-                    if (i + 1 < raw_str.size ())
+                    for (const auto &pattern : inside_str_ignore)
                         {
-                            switch (raw_str[i + 1])
+                            if (raw_str.compare (i, pattern.size (), pattern)
+                                == 0)
                                 {
-                                case 'n': // Newline
-                                    result += '\n';
-                                    i += 2; // Skip over \n
-                                    break;
-                                case 't': // Tab
-                                    result += '\t';
-                                    i += 2; // Skip over \t
-                                    break;
-                                case '"': // Double quote
-                                    result += '"';
-                                    i += 2; // Skip over \"
-                                    break;
-                                case '\\': // Backslash
-                                    result += '\\';
-                                    i += 2; // Skip over \\
-                        break;
-                                case 'u':   // Unicode escape sequence
-                                    if (i + 5 < raw_str.size ())
-                                        {
-                                            // Handle four-digit Unicode escape
-                                            // (e.g., \u003c)
-                                            std::stringstream ss;
-                                            ss << std::hex
-                                               << raw_str.substr (
-                                                      i + 2,
-                                                      4); // Extract the 4 hex
-                                                          // digits
-                                            int codePoint;
-                                            ss >> codePoint;
-
-                                            // Handle UTF-16 surrogate pairs if
-                                            // the code point is beyond U+FFFF
-                                            if (codePoint >= 0xD800
-                                                && codePoint <= 0xDBFF
-                                                && i + 9 < raw_str.size ()
-                                                && raw_str[i + 6] == '\\'
-                                                && raw_str[i + 7] == 'u')
-                                                {
-                                                    // It's a high surrogate,
-                                                    // expecting a low
-                                                    // surrogate
-                                                    std::stringstream
-                                                        lowSurrogate;
-                                                    lowSurrogate
-                                                        << std::hex
-                                                        << raw_str.substr (
-                                                               i + 8,
-                                                               4); // Extract
-                                                                   // the
-                                                                   // second 4
-                                                                   // hex
-                                                                   // digits
-                                                    int lowCodePoint;
-                                                    lowSurrogate
-                                                        >> lowCodePoint;
-
-                                                    // Combine the high and low
-                                                    // surrogate into a full
-                                                    // Unicode code point
-                                                    codePoint
-                                                        = ((codePoint - 0xD800)
-                                                           << 10)
-                                                          + (lowCodePoint
-                                                             - 0xDC00)
-                                                          + 0x10000;
-                                                    i += 6; // Skip the high
-                                                            // surrogate part
-                                                }
-
-                                            // Convert code point to UTF-8 and
-                                            // append it to the result
-                                            if (codePoint <= 0x7F)
-                                                {
-                                                    result += static_cast<
-                                                        char> (
-                                                        codePoint); // Single
-                                                                    // byte
-                                                }
-                                            else if (codePoint <= 0x7FF)
-                                                {
-                                                    result
-                                                        += static_cast<char> (
-                                                            (codePoint >> 6)
-                                                            | 0xC0); // First
-                                                                     // byte
-                                                    result
-                                                        += static_cast<char> (
-                                                            (codePoint & 0x3F)
-                                                            | 0x80); // Second
-                                                                     // byte
-                                                }
-                                            else if (codePoint <= 0xFFFF)
-                                                {
-                                                    result
-                                                        += static_cast<char> (
-                                                            (codePoint >> 12)
-                                                            | 0xE0); // First
-                                                                     // byte
-                                                    result
-                                                        += static_cast<char> (
-                                                            ((codePoint >> 6)
-                                                             & 0x3F)
-                                                            | 0x80); // Second
-                                                                     // byte
-                                                    result
-                                                        += static_cast<char> (
-                                                            (codePoint & 0x3F)
-                                                            | 0x80); // Third
-                                                                     // byte
-                                                }
-                                            else
-                                                {
-                                                    result
-                                                        += static_cast<char> (
-                                                            (codePoint >> 18)
-                                                            | 0xF0); // First
-                                                                     // byte
-                                                    result
-                                                        += static_cast<char> (
-                                                            ((codePoint >> 12)
-                                                             & 0x3F)
-                                                            | 0x80); // Second
-                                                                     // byte
-                                                    result
-                                                        += static_cast<char> (
-                                                            ((codePoint >> 6)
-                                                             & 0x3F)
-                                                            | 0x80); // Third
-                                                                     // byte
-                                                    result
-                                                        += static_cast<char> (
-                                                            (codePoint & 0x3F)
-                                                            | 0x80); // Fourth
-                                                                     // byte
-                                                }
-
-                                            i += 6; // Skip over \uXXXX
-                                        }
-                                    break;
-                                default:
-                                    // If it's an unknown escape sequence, just
-                                    // add the backslash as-is
-                                    result += raw_str[i];
-                                    i++; // Skip over the backslash
+                                    result
+                                        += pattern; // Append raw pattern as-is
+                                    i += pattern.size ();
+                                    is_raw = true;
+                                    break; // Stop checking once a match is
+                                           // found
                                 }
+                        }
+                }
+            if (is_raw)
+                continue; // Skip further processing for this substring
+
+            if (raw_str[i] == '\\' && i + 1 < raw_str.size ())
+                {
+                    std::string escape_seq = raw_str.substr (
+                        i, 2); // Get two-character escape sequence
+
+                    // If the escape sequence is in inside_str_ignore, append
+                    // as-is
+                    if (std::find (inside_str_ignore.begin (),
+                                   inside_str_ignore.end (), escape_seq)
+                        != inside_str_ignore.end ())
+                        {
+                            result += escape_seq;
+                            i += 2;
+                            continue;
+                        }
+
+                    // Handle common escape sequences
+                    switch (raw_str[i + 1])
+                        {
+                        case 'n':
+                            result += '\n';
+                            i += 2;
+                            break;
+                        case 't':
+                            result += '\t';
+                            i += 2;
+                            break;
+                        case '"':
+                            result += '"';
+                            i += 2;
+                            break;
+                        case '\\':
+                            result += '\\';
+                            i += 2;
+                            break;
+
+                        case 'u': // Unicode escape sequence
+                            if (i + 5 < raw_str.size ())
+                                {
+                                    std::stringstream ss;
+                                    ss << std::hex
+                                       << raw_str.substr (i + 2, 4);
+                                    int codePoint;
+                                    ss >> codePoint;
+
+                                    if (codePoint >= 0xD800
+                                        && codePoint <= 0xDBFF
+                                        && i + 9 < raw_str.size ()
+                                        && raw_str[i + 6] == '\\'
+                                        && raw_str[i + 7] == 'u')
+                                        {
+                                            std::stringstream lowSurrogate;
+                                            lowSurrogate
+                                                << std::hex
+                                                << raw_str.substr (i + 8, 4);
+                                            int lowCodePoint;
+                                            lowSurrogate >> lowCodePoint;
+
+                                            codePoint
+                                                = ((codePoint - 0xD800) << 10)
+                                                  + (lowCodePoint - 0xDC00)
+                                                  + 0x10000;
+                                            i += 6;
+                                        }
+
+                                    if (codePoint <= 0x7F)
+                                        {
+                                            result += static_cast<char> (
+                                                codePoint);
+                                        }
+                                    else if (codePoint <= 0x7FF)
+                                        {
+                                            result += static_cast<char> (
+                                                (codePoint >> 6) | 0xC0);
+                                            result += static_cast<char> (
+                                                (codePoint & 0x3F) | 0x80);
+                                        }
+                                    else if (codePoint <= 0xFFFF)
+                                        {
+                                            result += static_cast<char> (
+                                                (codePoint >> 12) | 0xE0);
+                                            result += static_cast<char> (
+                                                ((codePoint >> 6) & 0x3F)
+                                                | 0x80);
+                                            result += static_cast<char> (
+                                                (codePoint & 0x3F) | 0x80);
+                                        }
+                                    else
+                                        {
+                                            result += static_cast<char> (
+                                                (codePoint >> 18) | 0xF0);
+                                            result += static_cast<char> (
+                                                ((codePoint >> 12) & 0x3F)
+                                                | 0x80);
+                                            result += static_cast<char> (
+                                                ((codePoint >> 6) & 0x3F)
+                                                | 0x80);
+                                            result += static_cast<char> (
+                                                (codePoint & 0x3F) | 0x80);
+                                        }
+
+                                    i += 6;
+                                }
+                            break;
+
+                        default:
+                            // If it's an unknown escape sequence, just add the
+                            // backslash as-is
+                            result += raw_str[i];
+                            i++;
                         }
                 }
             else
                 {
-                    result
-                        += raw_str[i]; // Non-escape character, add to result
+                    result += raw_str[i];
                     i++;
                 }
         }
