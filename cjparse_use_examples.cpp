@@ -1,7 +1,11 @@
 #include "src/cjparse.cpp"
 #include "src/cjparse_json_generate.cpp"
+#include "src/cjparse_json_parser.cpp"
 #include <string>
 
+std::string json_3
+    = R"({"model":"deepseek-r1:14b","created_at":"2025-02-05T20:05:12.569859Z","response":"\u003cthink\u003e","done":false}
+)";
 std::string json_2 = R"({
         "Image": {
             "Width":  800,
@@ -54,6 +58,21 @@ std::string json_1 = R"([
   {"people": 93}
       ])";
 
+int
+main ()
+{
+    std::cout << "we are here" << '\n';
+    cjparse parser (json_3);
+    std::cout << "we are here 2" << '\n';
+    cjparse::json_value val = parser.return_the_value ("response");
+    std::cout << "we are here 3" << '\n';
+    std::string response = std::get<std::string> (val);
+
+    std::cout << response << '\n';
+
+    return 0;
+}
+/*
 int
 main ()
 {
@@ -113,3 +132,4 @@ main ()
 
     return 0;
 };
+*/
