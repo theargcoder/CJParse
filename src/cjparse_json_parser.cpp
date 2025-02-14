@@ -226,18 +226,68 @@ cjparse_json_parser::cjparse_parse_value_number (std::string &str)
             if (ch == '-' || ch == '+')
                 str_number_only.push_back (ch);
         }
-    if (std::find (str_number_only.begin (), str_number_only.end (), '.')
-            != str_number_only.end ()
-        || std::find (str_number_only.begin (), str_number_only.end (), 'e')
-               != str_number_only.end ()
-        || std::find (str_number_only.begin (), str_number_only.end (), 'E')
-               != str_number_only.end ())
+    // If nothing valid was found, throw an error.
+    if (str_number_only.empty ())
         {
-            return std::stod (str_number_only);
+            throw std::invalid_argument ("No valid numeric characters found.");
         }
-    else
+    try
         {
-            return std::stoi (str_number_only);
+            // If we detect a decimal point or exponent, treat it as a floating
+            // point number.
+            if (str_number_only.find ('.') != std::string::npos
+                || str_number_only.find ('e') != std::string::npos
+                || str_number_only.find ('E') != std::string::npos)
+                {
+                    // Convert using std::stod (or std::stold if you need more
+                    // precision)
+                    double d = std::stod (str_number_only);
+                    return d; // json_number will hold a double
+                }
+            else
+                {
+                    // For integer numbers, use stoll first to capture large
+                    // values.
+                    long long int ll = std::stoll (str_number_only);
+
+                    // Choose the smallest type that can fit the value.
+                    if (ll >= std::numeric_limits<int>::min ()
+                        && ll <= std::numeric_limits<int>::max ())
+                        {
+                            return static_cast<int> (ll);
+                        }
+                    else if (ll >= std::numeric_limits<long int>::min ()
+                             && ll <= std::numeric_limits<long int>::max ())
+                        {
+                            return static_cast<long int> (ll);
+                        }
+                    else
+                        {
+                            return ll; // fits in long long int
+                        }
+                }
+        }
+    catch (const std::invalid_argument &e)
+        {
+            // Handle conversion failure when no conversion could be performed.
+            throw std::invalid_argument (
+                "Conversion error: invalid argument in number conversion.");
+        }
+    catch (const std::out_of_range &e)
+        {
+            // If the number is out of range for stoll or stod, you might
+            // decide to try converting to a floating-point value as a
+            // fallback.
+            try
+                {
+                    double d = std::stod (str_number_only);
+                    return d;
+                }
+            catch (...)
+                {
+                    throw std::out_of_range (
+                        "Conversion error: number is out of range.");
+                }
         }
 }
 
