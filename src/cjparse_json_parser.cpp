@@ -267,27 +267,27 @@ cjparse_json_parser::cjparse_parse_value_number (std::string &str)
                         }
                 }
         }
-    catch (const std::invalid_argument &e)
+    catch (const std::out_of_range &)
         {
-            // Handle conversion failure when no conversion could be performed.
+            // If the number is too large for integer types, return max
+            // possible
+            if (str_number_only.find ('.') != std::string::npos
+                || str_number_only.find ('e') != std::string::npos
+                || str_number_only.find ('E') != std::string::npos)
+                {
+                    return std::numeric_limits<
+                        double>::max (); // Max representable double
+                }
+            else
+                {
+                    return std::numeric_limits<
+                        long long int>::max (); // Max integer value
+                }
+        }
+    catch (const std::invalid_argument &)
+        {
             throw std::invalid_argument (
                 "Conversion error: invalid argument in number conversion.");
-        }
-    catch (const std::out_of_range &e)
-        {
-            // If the number is out of range for stoll or stod, you might
-            // decide to try converting to a floating-point value as a
-            // fallback.
-            try
-                {
-                    double d = std::stod (str_number_only);
-                    return d;
-                }
-            catch (...)
-                {
-                    throw std::out_of_range (
-                        "Conversion error: number is out of range.");
-                }
         }
 }
 
