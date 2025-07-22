@@ -41,7 +41,10 @@ class cjparse_json_parser
        std::string &json_to_parse, cjparse::cjparse_json_value &JSON_container,
        std::vector<std::string> json_string_pattern_to_keep_raw);
 
- public:
+ private:
+   bool cjparse_invalid_json_input (std::string &json_to_validate);
+
+ private:
    // modify by reference the container due to nesting
    void cjparse_parse_value (std::string &str,
                              cjparse::cjparse_json_value &value);
