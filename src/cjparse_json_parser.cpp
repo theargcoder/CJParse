@@ -1,12 +1,13 @@
 #include "../include/cjparse_json_parser.h"
+#include <cstddef>
+#include <stack>
 
 cjparse_json_parser::cjparse_json_parser (
     std::string &str, cjparse::cjparse_json_value &JSON_container)
 {
-   /*
-  if (cjparse_invalid_json_input ())
-     throw 123; // do some error throwing
-  */
+   if (cjparse_invalid_json_input (str))
+      throw 123; // do some error throwing
+
    cjparse_parse_value (str, JSON_container);
 }
 
@@ -14,6 +15,9 @@ cjparse_json_parser::cjparse_json_parser (
     std::string &str, cjparse::cjparse_json_value &JSON_container,
     std::string json_string_pattern_to_keep_raw)
 {
+   if (cjparse_invalid_json_input (str))
+      throw 123; // do some error throwing
+
    inside_str_ignore.push_back (json_string_pattern_to_keep_raw);
    cjparse_parse_value (str, JSON_container);
 }
@@ -22,9 +26,76 @@ cjparse_json_parser::cjparse_json_parser (
     std::string &str, cjparse::cjparse_json_value &JSON_container,
     std::vector<std::string> json_string_pattern_to_keep_raw)
 {
-   inside_str_ignore = json_string_pattern_to_keep_raw;
+   if (cjparse_invalid_json_input (str))
+      throw 123; // do some error throwing
 
+   inside_str_ignore = json_string_pattern_to_keep_raw;
    cjparse_parse_value (str, JSON_container);
+}
+
+bool
+cjparse_json_parser::cjparse_invalid_json_input (std::string &json_to_validate)
+{
+
+   const size_t n = json_to_validate.size ();
+   if (!n)
+      return true; // EMPTY
+
+   auto is_escaped = [&] (size_t pos) {
+      size_t backslash_count = 0;
+      while (pos > 0 && json_to_validate[--pos] == '\\')
+         backslash_count++;
+      return (backslash_count % 2) == 1;
+   };
+
+   std::stack<char> s;
+   char cha = 0;
+
+   for (size_t i = 0, ln = 0, charl = 0; i < n; i++, charl++)
+      {
+         if (json_to_validate[i] == '\n')
+            {
+               charl = 0;
+               ln++;
+               continue;
+            }
+
+         if (json_to_validate[i] == '{' || json_to_validate[i] == '['
+             || json_to_validate[i] == '(' || json_to_validate[i] == '\"')
+            {
+               if (json_to_validate[i] == '\"' && is_escaped (i))
+                  continue;
+               s.push (json_to_validate[i]);
+            }
+         else if (json_to_validate[i] == '}' || json_to_validate[i] == ']'
+                  || json_to_validate[i] == ')' || json_to_validate[i] == '\"')
+            {
+               if (s.empty ())
+                  return true;
+               cha = s.top ();
+               /* TODO
+                *
+                * TRHOW SOME KIND OF LINE NUMBER x char x exception??
+                * so propper bad JSON handling
+                *
+                * ln = line number
+                * chrl = char line
+                *
+                */
+               if (cha == '{' && json_to_validate[i] != '}')
+                  return true;
+               else if (cha == '[' && json_to_validate[i] != ']')
+                  return true;
+               else if (cha == '(' && json_to_validate[i] != ')')
+                  return true;
+               else if (cha == '\"' && json_to_validate[i] != cha)
+                  return true;
+
+               s.pop ();
+            }
+      }
+
+   return s.empty () ? true : false;
 }
 
 cjparse_json_parser::STATE_CHECK_VAL
