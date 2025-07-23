@@ -1,7 +1,10 @@
 # Ignore everything
 *
 
-# Except for these specific file types
+# But allow directories to be checked
+!*/
+
+# Then allow specific file types
 !*.h
 !*.cpp
 !*.hpp
