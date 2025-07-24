@@ -7,7 +7,7 @@ class cjparse_error : public std::runtime_error
    enum class ERROR_CODE
    {
       JSON_SYNTAX_ERROR = 0,
-      JSON_ = 1,
+      JSON_INVALID_JSON_VALUE = 1,
    };
 
  public:
@@ -30,6 +30,12 @@ class cjparse_error : public std::runtime_error
    {
       if (cd == ERROR_CODE::JSON_SYNTAX_ERROR)
          return "CJPARSE: JSON syntax error in line: " + std::to_string (line)
+                + " character: " + std::to_string (char_number) + "\n";
+      else if (cd == ERROR_CODE::JSON_INVALID_JSON_VALUE)
+         return "CJPARSE: invalid JSON Value in line: " + std::to_string (line)
+                + " character: " + std::to_string (char_number) + "\n";
+      else if (cd == ERROR_CODE::JSON_INVALID_JSON_VALUE)
+         return "CJPARSE: invalid JSON Value in line: " + std::to_string (line)
                 + " character: " + std::to_string (char_number) + "\n";
 
       return "CJPARSE: UNKNOWN ERROR\n";

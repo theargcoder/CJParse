@@ -1,7 +1,11 @@
+#include "include/cjparse.h"
 #include "src/cjparse.cpp"
 #include "src/cjparse_json_generate.cpp"
 #include "src/cjparse_json_parser.cpp"
 #include <string>
+
+std::string json_4
+    = R"({{ "a": "value with double slash escape: \\\\\" still inside" }})";
 
 std::string json_3
     = R"({"model":"deepseek-r1:14b","created_at":"2025-02-05T20:05:12.569859Z","response":"\u003cthink\u003e \n the \n cool \n this will be raw \( \n pp ","done":false}
@@ -61,16 +65,13 @@ std::string json_1 = R"([
 int
 main ()
 {
-    std::cout << "we are here" << '\n';
-    cjparse parser (json_3, std::vector<std::string> ({ R"(\()", R"()\)" }));
-    std::cout << "we are here 2" << '\n';
-    cjparse::json_value val = parser.return_the_value ("response");
-    std::cout << "we are here 3" << '\n';
-    std::string response = std::get<std::string> (val);
-
-    std::cout << response << '\n';
-
-    return 0;
+   std::cout << "we are here" << '\n';
+   cjparse parser (json_4);
+   std::cout << "we are here 2" << '\n';
+   cjparse_json_generator gen = cjparse_json_generator (parser.JSON, true);
+   std::cout << "we are here 3" << '\n';
+   std::cout << gen.JSON_string << '\n';
+   return 0;
 }
 /*
 int
