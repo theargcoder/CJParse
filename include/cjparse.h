@@ -9,9 +9,12 @@
 #include <sstream>
 #include <stack>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <variant>
 #include <vector>
+
+#include "../src/cjparse_json_errors.cpp"
 
 // JSON DATA TYPES
 // string      ex: "Hello"
