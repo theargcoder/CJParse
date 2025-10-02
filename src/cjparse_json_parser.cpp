@@ -35,66 +35,89 @@ cjparse_json_parser::cjparse_invalid_json_input (
     std::string_view json_to_validate)
 {
   const size_t n = json_to_validate.size ();
-  if (!n)
+  if (n == 0)
     return true; // EMPTY
 
   std::stack<char> s;
-  char cha = 0;
   bool in_str = false;
+  bool escaped = false;
 
-  size_t i = 0, ln = 0, charl = 0;
+  size_t i = 0;
+  size_t line = 0;
+  size_t col = 0;
 
-  for (; i < n; i++, charl++)
+  for (; i < n; i++)
     {
-      if (json_to_validate[i] == '\n')
+      char c = json_to_validate[i];
+
+      if (c == '\n')
         {
-          charl = 0;
-          ln++;
+          line++, col = 0;
+          if (escaped)
+            throw cjparse_error (line, col,
+                                 cjparse_error::ERROR_CODE::JSON_SYNTAX_ERROR);
           continue;
         }
 
-      if (in_str && json_to_validate[i] == '\\')
+      if (in_str)
         {
-          i++;
-          charl++;
+          if (escaped)
+            {
+              escaped = false, col++;
+              continue;
+            }
+          if (c == '\\')
+            {
+              escaped = true, col++;
+              continue;
+            }
+          if (c == '\"')
+            {
+              // end of string (not escaped)
+              in_str = false, col++;
+              continue;
+            }
+          col++;
           continue;
         }
 
-      if (json_to_validate[i] == '{' || json_to_validate[i] == '[')
+      // Not inside a string
+      if (c == '\"')
         {
-          s.push (json_to_validate[i]);
+          in_str = true, escaped = false, col++;
+          continue;
         }
-      else if (json_to_validate[i] == '"')
+
+      if (c == '{' || c == '[')
         {
-          if (!in_str)
-            in_str = true;
-          else
-            in_str = false;
+          s.push (c), col++;
+          continue;
         }
-      else if ((json_to_validate[i] == '}' || json_to_validate[i] == ']')
-               && !in_str)
+
+      if (c == '}' || c == ']')
         {
           if (s.empty ())
-            {
-              throw cjparse_error (
-                  ln, charl, cjparse_error::ERROR_CODE::JSON_SYNTAX_ERROR);
-            }
-
-          cha = s.top ();
-
-          if ((cha == '{' && json_to_validate[i] != '}')
-              || (cha == '[' && json_to_validate[i] != ']'))
-            {
-              throw cjparse_error (
-                  ln, charl, cjparse_error::ERROR_CODE::JSON_SYNTAX_ERROR);
-            }
-
+            throw cjparse_error (line, col,
+                                 cjparse_error::ERROR_CODE::JSON_SYNTAX_ERROR);
+          char top = s.top ();
+          if ((top == '{' && c != '}') || (top == '[' && c != ']'))
+            throw cjparse_error (line, col,
+                                 cjparse_error::ERROR_CODE::JSON_SYNTAX_ERROR);
           s.pop ();
+          col++;
+          continue;
         }
+      // col keeps on chugging
+      col++;
     }
 
+  // if we ended while inside a string -> unterminated string
+  if (in_str)
+    throw cjparse_error (line, col,
+                         cjparse_error::ERROR_CODE::JSON_SYNTAX_ERROR);
+
   if (!s.empty ())
-    throw cjparse_error (ln, charl,
+    throw cjparse_error (line, col,
                          cjparse_error::ERROR_CODE::JSON_SYNTAX_ERROR);
 
   return true;
