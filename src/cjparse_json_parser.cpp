@@ -1,16 +1,5 @@
 #include "../include/cjparse_json_parser.h"
 
-#include <algorithm>
-#include <any>
-#include <cctype>
-#include <cstdlib>
-#include <limits>
-#include <map>
-#include <sstream>
-#include <stack>
-#include <string_view>
-#include <vector>
-
 cjparse_json_parser::cjparse_json_parser (
     std::string_view str, cjparse::cjparse_json_value &JSON_container)
 {
